@@ -1,0 +1,1005 @@
+diff --git a/code/core/arm9/gbarunner9.ld b/code/core/arm9/gbarunner9.ld
+--- a/code/core/arm9/gbarunner9.ld
++++ b/code/core/arm9/gbarunner9.ld
+@@ -245,6 +245,8 @@
+ 	    __ewram_lma = LOADADDR(.ewram);
+ 	    __ewram_start = ABSOLUTE(.);
+ 	    *(.ewram)
++        *(.perf.rodata)
++        *(.perf.data)
+ 	    . = ALIGN(4);    /* REQUIRED. LD is flaky without it. */
+ 	    __ewram_end = ABSOLUTE(.);
+ 	} >ewram AT>vramab :ewram
+@@ -326,3 +328,5 @@
+ 	.stack 0x80000 : { _stack = .; *(.stack) }
+ 	/* These must appear regardless of  .  */
+ }
++
++ASSERT((gHicodeUndefinedData & 0x7FF) == 0, "Hicode undefined buffer requires 2KiB alignment");
+diff --git a/code/core/arm9/source/Emulator/VBlankIrq.s b/code/core/arm9/source/Emulator/VBlankIrq.s
+--- a/code/core/arm9/source/Emulator/VBlankIrq.s
++++ b/code/core/arm9/source/Emulator/VBlankIrq.s
+@@ -11,7 +11,7 @@
+     // as a keep-alive for the slot2 .pre read path.
+     ldr sp,= dtcmIrqStackEnd
+     push {r0-r3,r12}
+-    bl slot2DiagVblankHook
++    bl perfScreenVblankHook
+     pop {r0-r3,r12}
+ 
+     // For center and mask display capture has to be enabled every frame
+diff --git a/code/core/arm9/source/Fat/FsIpc.cpp b/code/core/arm9/source/Fat/FsIpc.cpp
+--- a/code/core/arm9/source/Fat/FsIpc.cpp
++++ b/code/core/arm9/source/Fat/FsIpc.cpp
+@@ -9,6 +9,8 @@
+ #include "Cpsr.h"
+ #include "VirtualMachine/VMNestedIrq.h"
+ #include "FsIpc.h"
++#include "PerfScreen.h"
++#include "X1Readonly.h"
+ 
+ [[gnu::section(".ewram.bss")]]
+ alignas(32) static fs_ipc_cmd_t sIpcCommand;
+@@ -28,6 +30,8 @@
+ u32 fs_waitForCompletion(FsWaitToken* waitToken, bool keepIrqsDisabled)
+ {
+     u32 irqs;
++    u32 diagPolls = 0;
++    perfScreenWaitBegin();
+ #ifdef GBAR3_IRQ_YIELDING
+     if (gIrqYieldingEnabled)
+     {
+@@ -79,10 +83,12 @@
+                 sCurrentWaitToken = nullptr;
+                 break;
+             }
++            ++diagPolls;
+             arm_restoreIrqs(irqs);
+         }
+     }
+ 
++    perfScreenWait(diagPolls);
+     if (!keepIrqsDisabled)
+     {
+         arm_restoreIrqs(irqs);
+@@ -98,6 +104,11 @@
+ 
+ static void sendIpcCommand()
+ {
++    if (sIpcCommand.cmd==FS_IPC_CMD_DLDI_WRITE_SECTORS || sIpcCommand.cmd==FS_IPC_CMD_DSI_SD_WRITE_SECTORS)
++        if (!d2BootWritesAllowed()) x1BlockedWrite();
++    if (sIpcCommand.cmd==FS_IPC_CMD_DLDI_READ_SECTORS || sIpcCommand.cmd==FS_IPC_CMD_DSI_SD_READ_SECTORS)
++        x1CountRead();
++    perfScreenRequest(sIpcCommand.cmd, sIpcCommand.sector, sIpcCommand.count);
+     dc_flushRange(&sIpcCommand, sizeof(sIpcCommand));
+     ipc_setArm9SyncBits(ipc_getArm7SyncBits() + 1);
+     ipc_sendWordDirect(((((u32)&sIpcCommand) >> 2) << IPC_FIFO_MSG_CHANNEL_BITS) | IPC_CHANNEL_FS);
+diff --git a/code/core/arm9/source/Fat/diskio.cpp b/code/core/arm9/source/Fat/diskio.cpp
+--- a/code/core/arm9/source/Fat/diskio.cpp
++++ b/code/core/arm9/source/Fat/diskio.cpp
+@@ -7,6 +7,7 @@
+ #include "cp15.h"
+ #include "FsIpc.h"
+ #include "diskio.h"
++#include "X1Readonly.h"
+ 
+ static u32 sAgbMem;
+ 
+@@ -71,6 +72,7 @@
+ 
+ extern "C" DRESULT disk_write(BYTE pdrv, const BYTE *buff, DWORD sector, UINT count)
+ {
++    if (!d2BootWritesAllowed() || (pdrv!=DEV_FAT && pdrv!=DEV_SD)) x1BlockedWrite(); // boot cache only
+     if (pdrv == DEV_FAT)
+     {
+         fs_writeSectors(FS_DEVICE_DLDI, buff, sector, count);
+diff --git a/code/core/arm9/source/Logger/FileLogger.cpp b/code/core/arm9/source/Logger/FileLogger.cpp
+--- a/code/core/arm9/source/Logger/FileLogger.cpp
++++ b/code/core/arm9/source/Logger/FileLogger.cpp
+@@ -3,6 +3,7 @@
+ #include "mini-printf.h"
+ #include "Cpsr.h"
+ #include "FileLogger.h"
++#include "PerfScreen.h"
+ 
+ [[gnu::section(".ewram")]]
+ bool FileLogger::Open(const char* path)
+@@ -31,14 +32,18 @@
+         return;
+ 
+     u32 irqs = arm_disableIrqs();
++    u32 perfScope = perfScreenEnterScope(1);
+     {
+         mini_vsnprintf(_logBuffer, sizeof(_logBuffer), fmt, vlist);
+         UINT bw;
++        perfScreenLog();
+         if (f_write(_file, _logBuffer, strlen(_logBuffer), &bw) == FR_OK)
+         {
+             // Keep the log observable even after a power loss / crash.
++            perfScreenSync();
+             f_sync(_file);
+         }
+     }
++    perfScreenLeaveScope(perfScope);
+     arm_restoreIrqs(irqs);
+ }
+diff --git a/code/core/arm9/source/MemoryEmulator/HiCodeCacheMappingC.c b/code/core/arm9/source/MemoryEmulator/HiCodeCacheMappingC.c
+--- a/code/core/arm9/source/MemoryEmulator/HiCodeCacheMappingC.c
++++ b/code/core/arm9/source/MemoryEmulator/HiCodeCacheMappingC.c
+@@ -16,7 +16,9 @@
+ // Will be filled with HICODE_UNDEFINED_INSTRUCTION for fast prefetching.
+ // Must live in EWRAM BSS: the default .bss sits at the very end of the vrama
+ // region and has no room for the 2KB (see gbarunner9.ld).
+-[[gnu::section(".ewram.bss"), gnu::aligned(32)]]
++// Hicode prefetch indices use the low 11 address bits; keep the
++// undefined-line buffer aligned to one 2 KiB I-cache segment.
++[[gnu::section(".ewram.bss"), gnu::aligned(2048)]]
+ u32 gHicodeUndefinedData[2048 / 4];
+ 
+ static inline u32 mpu_getRegion4(void)
+diff --git a/code/core/arm9/source/Patches/ExternalPatch.cpp b/code/core/arm9/source/Patches/ExternalPatch.cpp
+--- a/code/core/arm9/source/Patches/ExternalPatch.cpp
++++ b/code/core/arm9/source/Patches/ExternalPatch.cpp
+@@ -9,6 +9,7 @@
+ #include "SdCache/SdCache.h"
+ #include "MemCopy.h"
+ #include "ExternalPatch.h"
++#include "X1Readonly.h"
+ #include "cp15.h"
+ 
+ extern FIL gExternalPatchFile;
+@@ -244,15 +245,19 @@
+ }
+ 
+ [[gnu::section(".ewram")]]
+-bool ExternalPatch::TryLoadPrepatch(u32 patchHash)
++bool ExternalPatch::TryLoadPrepatch(u32 patchHash, const char* pathOverride)
+ {
+     if (mIndexCount == 0)
+         return false;
+ 
+-    char prePath[64];
+-    getPrepatchPath(prePath, sizeof(prePath), mHeader.gamecode, mHeader.version);
+-
+-    if (f_open(&gPrepatchFile, prePath, FA_READ | FA_OPEN_EXISTING) != FR_OK)
++    // Boot-only validation scratch; cache fetches have not begun yet.
++    struct ValidationScratch { char path[64]; PrepatchHeader header; PrepatchBlockEntry entry; };
++    static_assert(sizeof(ValidationScratch) <= SDC_BLOCK_SIZE);
++    auto& scratch = *reinterpret_cast<ValidationScratch*>(&sdc_cache[3][0]);
++    char* prePath = scratch.path;
++    getPrepatchPath(prePath, 64, mHeader.gamecode, mHeader.version);
++
++    if (f_open(&gPrepatchFile, pathOverride ? pathOverride : prePath, FA_READ | FA_OPEN_EXISTING) != FR_OK)
+         return false;
+ 
+     auto reject = [&]() -> bool {
+@@ -261,7 +266,7 @@
+     };
+ 
+     UINT br;
+-    PrepatchHeader header;
++    PrepatchHeader& header = scratch.header;
+     if (f_read(&gPrepatchFile, &header, sizeof(header), &br) != FR_OK || br != sizeof(header))
+         return reject();
+     if (header.valid != 1 || header.formatVersion != PREPATCH_FORMAT_VERSION)
+@@ -288,7 +293,7 @@
+     // Entries must match the in-memory index exactly (order, ids, offsets).
+     for (u32 i = 0; i < mIndexCount; i++)
+     {
+-        PrepatchBlockEntry entry;
++        PrepatchBlockEntry& entry = scratch.entry;
+         if (f_read(&gPrepatchFile, &entry, sizeof(entry), &br) != FR_OK || br != sizeof(entry))
+             return reject();
+         if (entry.blockIndex != sBlockIndex[i].block_index
+@@ -309,147 +314,120 @@
+     return true;
+ }
+ 
+-[[gnu::section(".ewram")]]
++// D2: boot-only baker. Never truncate/delete an existing sidecar.
++// Uses already-owned SD-cache blocks 0/1/2 before any cache fetches.
++[[gnu::section(".ewram"), gnu::noinline]]
+ bool ExternalPatch::BakePrepatch(u32 patchHash)
+ {
+-    // TryLoad guarantees the patch is loaded before calling this. The
+-    // mLoaded flag is intentionally NOT checked: a corrupted flag must not
+-    // hide the real bake failure behind a silent early return.
+-    if (mIndexCount == 0)
+-    {
+-        return true;
+-    }
+-
+-    char prePath[64];
+-    getPrepatchPath(prePath, sizeof(prePath), mHeader.gamecode, mHeader.version);
+-
+-    FRESULT openRes = f_open(&gPrepatchFile, prePath, FA_READ | FA_WRITE | FA_CREATE_ALWAYS);
+-    if (openRes != FR_OK)
+-    {
+-        gLogger->Log(LogLevel::Error, "External patch: cannot create %s (res=%d)\n", prePath, (int)openRes);
+-        return false;
+-    }
+-
+-    auto abortBake = [&](u32 step) -> bool {
+-        gLogger->Log(LogLevel::Error, "External patch: bake aborted at step %u\n", step);
+-        f_sync(&gPrepatchFile);
+-        f_close(&gPrepatchFile);
+-        f_unlink(prePath);
+-        sPrepatchTableValid = false;
+-        return false;
++    struct BootScratch {
++        char pre[64], temp[64], backup[64];
++        FILINFO info;
++        PrepatchHeader header;
+     };
+-
+-    u32 clusterSize = gFile.obj.fs->csize * 512;
++    static_assert(sizeof(BootScratch) <= SDC_BLOCK_SIZE);
++    auto& scratch = *reinterpret_cast<BootScratch*>(&sdc_cache[2][0]);
++    char* prePath = scratch.pre;
++    char* tempPath = scratch.temp;
++    char* backupPath = scratch.backup;
++    FILINFO& info = scratch.info;
++    getPrepatchPath(prePath, 64, mHeader.gamecode, mHeader.version);
++    memcpy(tempPath, prePath, 64);
++    memcpy(backupPath, prePath, 64);
++    u32 pathLength = strlen(prePath);
++    memcpy(tempPath + pathLength - 3, "tmp", 4);
++    memcpy(backupPath + pathLength - 3, "bak", 4);
++    FRESULT res = f_stat(prePath, &info);
++    bool hadOld = res == FR_OK;
++    if ((hadOld && (info.fattrib & AM_DIR)) ||
++        (!hadOld && res != FR_NO_FILE && res != FR_NO_PATH)) x1Stop(31);
++    res = f_stat(tempPath, &info);
++    if (res != FR_NO_FILE && res != FR_NO_PATH) x1Stop(32);
++    if (hadOld) {
++        res = f_stat(backupPath, &info);
++        if (res != FR_NO_FILE && res != FR_NO_PATH) x1Stop(33);
++    }
++    FATFS* fs = gFile.obj.fs;
++    if (!fs || (fs->pdrv != DEV_FAT && fs->pdrv != DEV_SD) ||
++        !fs->csize || (fs->csize & (fs->csize - 1))) x1Stop(34);
++    u32 clusterSize = fs->csize * 512;
+     u32 indexBytes = mIndexCount * sizeof(PrepatchBlockEntry);
+     u32 dataBase = (sizeof(PrepatchHeader) + indexBytes + clusterSize - 1) & ~(clusterSize - 1);
+-
+-    PrepatchHeader header;
+-    memset(&header, 0, sizeof(header));
+-    header.valid = 0; // placeholder; promoted to 1 only after everything is written
++    PrepatchHeader& header = scratch.header;
++    header = {};
+     header.formatVersion = PREPATCH_FORMAT_VERSION;
+     header.patchHash = patchHash;
+     header.patchedBlockCount = mIndexCount;
+     header.romSize = mRomSize != 0 ? mRomSize : (u32)f_size(&gFile);
+     header.romHash = ComputeRomSourceHash();
+-    if (header.romHash == 0)
+-    {
+-        return abortBake(1);
+-    }
+-
++    if (!mIndexCount || !header.romHash) x1Stop(35);
++
++    d2BeginBootWrites();
++    bool opened = false;
++    auto fail = [&](u32 code) -> bool {
++        // Preserve temp/backup for inspection; never unlink on failure.
++        if (opened) f_close(&gPrepatchFile);
++        sPrepatchTableValid = false;
++        d2EndBootWrites();
++        x1Stop(code);
++    };
++    res = f_mkdir(GAME_PREPATCH_DIR_PATH);
++    if (res != FR_OK && res != FR_EXIST) return fail(36);
++    if (f_open(&gPrepatchFile, tempPath, FA_READ | FA_WRITE | FA_CREATE_NEW) != FR_OK) return fail(37);
++    opened = true;
+     UINT bw;
+-    if (f_write(&gPrepatchFile, &header, sizeof(header), &bw) != FR_OK || bw != sizeof(header))
+-        return abortBake(1);
+-
+-    // Index entries, then padding up to the 512/cluster-aligned data base.
+-    u32 pos = sizeof(PrepatchHeader);
+-    for (u32 i = 0; i < mIndexCount; i++)
+-    {
+-        PrepatchBlockEntry entry;
+-        entry.blockIndex = sBlockIndex[i].block_index;
+-        entry.reserved = 0;
+-        entry.dataOffset = dataBase + i * SDC_BLOCK_SIZE;
+-        if (f_write(&gPrepatchFile, &entry, sizeof(entry), &bw) != FR_OK || bw != sizeof(entry))
+-            return abortBake(2);
+-        pos += sizeof(entry);
+-    }
+-    if (pos < dataBase)
+-    {
+-        memset(BAKE_BUF, 0, SDC_BLOCK_SIZE);
+-        u32 pad = dataBase - pos;
+-        while (pad > 0)
+-        {
+-            u32 chunk = pad > SDC_BLOCK_SIZE ? SDC_BLOCK_SIZE : pad;
+-            if (f_write(&gPrepatchFile, BAKE_BUF, chunk, &bw) != FR_OK || bw != chunk)
+-                return abortBake(3);
+-            pad -= chunk;
+-        }
+-    }
+-
+-    // Bake every patched block: original block + IPS records -> 4KB result.
+-    u32 expectedFirstDword = 0;
+-    for (u32 i = 0; i < mIndexCount; i++)
+-    {
+-        const RomBlockIndexEntry& entry = sBlockIndex[i];
+-        if (!ReadRomBlock(entry.block_index, BAKE_BUF))
+-        {
+-            gLogger->Log(LogLevel::Error, "External patch: bake read failed for block %u\n", entry.block_index);
+-            return abortBake(4);
+-        }
+-        if (!ApplyIPSPatches(entry.block_patch_address, entry.block_patch_size, BAKE_BUF))
+-        {
+-            gLogger->Log(LogLevel::Error, "External patch: bake apply failed for block %u\n", entry.block_index);
+-            return abortBake(5);
+-        }
+-        if (i == 0)
+-        {
+-            // Capture the FIRST baked block's head for the readback check;
+-            // BAKE_BUF is reused and will hold the last block afterwards.
+-            expectedFirstDword = *(u32*)BAKE_BUF;
+-        }
+-        if (f_write(&gPrepatchFile, BAKE_BUF, SDC_BLOCK_SIZE, &bw) != FR_OK || bw != SDC_BLOCK_SIZE)
+-            return abortBake(6);
+-    }
+-
+-    // Commit: promote the placeholder to a valid cache.
++    if (f_write(&gPrepatchFile, &header, sizeof(header), &bw) != FR_OK || bw != sizeof(header)) return fail(38);
++    for (u32 i=0; i<mIndexCount; ++i) {
++        PrepatchBlockEntry entry = {sBlockIndex[i].block_index, 0, dataBase + i * SDC_BLOCK_SIZE};
++        if (f_write(&gPrepatchFile, &entry, sizeof(entry), &bw) != FR_OK || bw != sizeof(entry)) return fail(38);
++    }
++    u32 pad = dataBase - sizeof(header) - indexBytes;
++    memset(BAKE_BUF, 0, SDC_BLOCK_SIZE);
++    while (pad) {
++        u32 n = pad > SDC_BLOCK_SIZE ? SDC_BLOCK_SIZE : pad;
++        if (f_write(&gPrepatchFile, BAKE_BUF, n, &bw) != FR_OK || bw != n) return fail(38);
++        pad -= n;
++    }
++    for (u32 i=0; i<mIndexCount; ++i) {
++        const auto& entry = sBlockIndex[i];
++        if (!ReadRomBlock(entry.block_index, BAKE_BUF) ||
++            !ApplyIPSPatches(entry.block_patch_address, entry.block_patch_size, BAKE_BUF)) return fail(39);
++        if (f_write(&gPrepatchFile, BAKE_BUF, SDC_BLOCK_SIZE, &bw) != FR_OK || bw != SDC_BLOCK_SIZE) return fail(38);
++    }
++    // Flush the complete valid=0 payload before committing the temporary header.
++    if (f_sync(&gPrepatchFile) != FR_OK) return fail(40);
+     header.valid = 1;
+-    if (f_lseek(&gPrepatchFile, 0) != FR_OK)
+-        return abortBake(7);
+-    if (f_write(&gPrepatchFile, &header, sizeof(header), &bw) != FR_OK || bw != sizeof(header))
+-        return abortBake(8);
+-
+-    // Build the cluster map for runtime raw-sector reads.
+-    sPrepatchClusterTable[0] = sizeof(sPrepatchClusterTable) / sizeof(DWORD);
+-    gPrepatchFile.cltbl = sPrepatchClusterTable;
+-    if (f_lseek(&gPrepatchFile, CREATE_LINKMAP) != FR_OK)
+-        return abortBake(9);
+-    if (f_sync(&gPrepatchFile) != FR_OK)
+-        return abortBake(10);
+-
+-    sPrepatchFileSize = (u32)f_size(&gPrepatchFile);
+-    sPrepatchTableValid = true;
+-
+-    gLogger->Log(LogLevel::Debug,
+-        "External patch: baked %u blocks (clusterSize=%u) to %s\n",
+-        mIndexCount, clusterSize, prePath);
+-
+-    // Self-check: read the first baked block back through the exact raw-sector
+-    // path used at runtime. Catches cluster-map/geometry mistakes at boot
+-    // instead of white-screening in-game.
+-    u32 checkSector = externalPatch_getBakedBlockSector(sBlockIndex[0].block_index);
+-    if (checkSector == 0)
+-    {
+-        gLogger->Log(LogLevel::Error, "External patch: readback sector lookup failed\n");
+-        return abortBake(11);
+-    }
+-    fs_readSectors(gFile.obj.fs->pdrv == DEV_FAT ? FS_DEVICE_DLDI : FS_DEVICE_DSI_SD,
+-                   BAKE_BUF, checkSector, SDC_BLOCK_SIZE / 512);
+-    if (memcmp(BAKE_BUF, &expectedFirstDword, 4) != 0)
+-    {
+-        gLogger->Log(LogLevel::Error,
+-            "External patch: readback mismatch (expected 0x%08X, got 0x%08X)\n",
+-            expectedFirstDword, *(u32*)BAKE_BUF);
+-        return abortBake(12);
+-    }
++    if (f_lseek(&gPrepatchFile, 0) != FR_OK ||
++        f_write(&gPrepatchFile, &header, sizeof(header), &bw) != FR_OK || bw != sizeof(header) ||
++        f_sync(&gPrepatchFile) != FR_OK) return fail(40);
++    if (f_close(&gPrepatchFile) != FR_OK) return fail(41);
++    opened = false;
++
++    // Reopen READ ONLY, validate the ordinary metadata/map, then compare EVERY
++    // raw-sector block to independently recomputed cart+patch contents.
++    if (!TryLoadPrepatch(patchHash, tempPath)) return fail(42);
++    opened = true;
++    u8* verify = &sdc_cache[1][0];
++    for (u32 i=0; i<mIndexCount; ++i) {
++        const auto& entry = sBlockIndex[i];
++        if (!ReadRomBlock(entry.block_index, BAKE_BUF) ||
++            !ApplyIPSPatches(entry.block_patch_address, entry.block_patch_size, BAKE_BUF)) return fail(43);
++        u32 sector = externalPatch_getBakedBlockSector(entry.block_index);
++        if (!sector) return fail(44);
++        for (u32 j=0; j<SDC_BLOCK_SIZE; ++j) verify[j] = BAKE_BUF[j] ^ 0xFF;
++        dc_flushRange(verify, SDC_BLOCK_SIZE);
++        dc_drainWriteBuffer(); // preserve poison across the read-side invalidate
++        fs_readSectors(fs->pdrv == DEV_FAT ? FS_DEVICE_DLDI : FS_DEVICE_DSI_SD,
++                       verify, sector, SDC_BLOCK_SIZE / 512);
++        if (memcmp(BAKE_BUF, verify, SDC_BLOCK_SIZE)) return fail(45);
++    }
++    if (f_close(&gPrepatchFile) != FR_OK) return fail(41);
++    opened = false;
++    sPrepatchTableValid = false;
++    // FAT rename is NOT a power-loss-atomic multi-file transaction. Each result
++    // is checked; the old file is retained under .bak and never deleted here.
++    if (hadOld && f_rename(prePath, backupPath) != FR_OK) return fail(46);
++    if (f_rename(tempPath, prePath) != FR_OK) return fail(47);
++    d2EndBootWrites(); // drain outstanding I/O and permanently close the window
+     return true;
+ }
+ 
+@@ -526,10 +504,7 @@
+ 
+     // Pre-patched cache: reuse a valid .pre, or bake a new one. The patch
+     // hash recorded inside detects any change of the .patch file.
+-    if (mIndexCount == 0)
+-    {
+-        return true;
+-    }
++    if (mIndexCount == 0) x1Stop(X1_BAD_PATCH);
+ 
+     u32 patchHash = computePatchFileHash();
+     if (patchHash == 0)
+@@ -540,20 +515,13 @@
+         return false;
+     }
+ 
+-    f_mkdir(GAME_PREPATCH_DIR_PATH); // ok if it already exists
+-
+-    if (TryLoadPrepatch(patchHash))
+-    {
+-        return true;
+-    }
+-
+-    if (!BakePrepatch(patchHash))
+-    {
+-        // The .pre cache is an optimization, not a requirement: fall back to
+-        // on-demand patching (linear at boot + per-cache-block at runtime).
+-        gLogger->Log(LogLevel::Warning, "External patch: bake failed, falling back to on-demand patching\n");
+-        return true;
+-    }
++    // D2: warm cache is read-only; cold cache writes only inside the baker.
++    if (!TryLoadPrepatch(patchHash)) {
++        if (!BakePrepatch(patchHash)) x1Stop(30);
++        // The window is closed before reopening the final name for runtime.
++        if (!TryLoadPrepatch(patchHash)) x1Stop(49);
++    }
++    x1PreVerified();
+     return true;
+ }
+ 
+diff --git a/code/core/arm9/source/Patches/ExternalPatch.h b/code/core/arm9/source/Patches/ExternalPatch.h
+--- a/code/core/arm9/source/Patches/ExternalPatch.h
++++ b/code/core/arm9/source/Patches/ExternalPatch.h
+@@ -109,7 +109,7 @@
+ private:
+     bool ApplyIPSPatches(u32 patchOffset, u32 patchSize, u8* targetBuf);
+     bool LoadBlockIndex();
+-    bool TryLoadPrepatch(u32 patchHash);
++    bool TryLoadPrepatch(u32 patchHash, const char* pathOverride = nullptr);
+     bool BakePrepatch(u32 patchHash);
+     bool ReadRomBlock(u32 romBlock, u8* dst);
+     u32 ComputeRomSourceHash();
+diff --git a/code/core/arm9/source/PerfScreen.cpp b/code/core/arm9/source/PerfScreen.cpp
+new file mode 100644
+--- /dev/null
++++ b/code/core/arm9/source/PerfScreen.cpp
+@@ -0,0 +1,262 @@
++// Frozen readout experiment. Gameplay keeps the original capture/display path.
++// No FPS, milliseconds, driver-error or complete cache-hit-ratio claims.
++#include "PerfScreen.h"
++#ifndef PERF_HOST_TEST
++#include "X1Readonly.h"
++#endif
++#ifndef PERF_HOST_TEST
++#include "common.h"
++#include "Fat/FsIpc.h"
++#include "Slot2Diag.h"
++#include "SystemIpc.h"
++#include "Save/Save.h"
++#include "Application/Settings/AppSettingsService.h"
++#include "cp15.h"
++#define CODE __attribute__((section(".ewram"), noinline))
++#define STATE __attribute__((section(".ewram.bss")))
++#define CONST __attribute__((section(".perf.rodata")))
++#define CONFIG __attribute__((used, section(".perf.data")))
++#else
++#define CODE
++#define STATE
++#define CONST
++#define CONFIG
++extern "C" void slot2DiagVblankHook(void);
++#endif
++
++struct PerfConfig { uint32_t magic[3]; volatile uint32_t enabled; uint32_t end; };
++extern "C" {
++CONFIG PerfConfig gPerfConfig={{0x33524650,0x30313230,0x32445253},0,0x21444e45};
++}
++struct LoadEvent { uint32_t block,source,state; };
++struct PerfState {
++    uint32_t active,ticks,uiFlags;
++    uint32_t starts[4],done[4],slowHits,evictions,unique,reloads;
++    uint32_t waitCalls,busyCalls,polls,maxPolls;
++    uint32_t requests[5],sectorsRead,sectorsWritten,lastCmd,lastSector;
++    uint32_t logCalls,syncCalls,eventHead;
++    uint8_t seen[1024];
++    LoadEvent events[4];
++    uint32_t scope,scopePolls[3],scopeBusy[3],waitDepth,reserved[4];
++};
++static STATE PerfState s;
++static_assert(sizeof(PerfState)==1244);
++static_assert(__builtin_offsetof(PerfState,reserved)+16==sizeof(PerfState));
++enum { ALLOWED=1,ARMED=2,FROZEN=4,SAMPLING=8,COMBO=(1u<<2)|(1u<<8)|(1u<<9),NO_BANK=4 };
++static CODE bool enabled() { return s.active && (s.uiFlags&SAMPLING) && gPerfConfig.enabled==1; }
++extern "C" CODE void perfScreenLoad(uint32_t block,uint32_t source,uint32_t state)
++{
++    if (!enabled() || source>=4 || state>1) return;
++    if (!state) {
++        ++s.starts[source];
++        if (block<8192) {
++            uint8_t mask=uint8_t(1u<<(block&7));
++            if (s.seen[block>>3]&mask) ++s.reloads;
++            else { s.seen[block>>3]|=mask; ++s.unique; }
++        }
++    } else ++s.done[source];
++    s.events[s.eventHead&3]={block,source,state};
++    ++s.eventHead;
++}
++extern "C" CODE void perfScreenSlowHit(void) { if (enabled()) ++s.slowHits; }
++extern "C" CODE void perfScreenVictim(uint32_t block,uint32_t oldBlock)
++{ (void)block; if (enabled() && oldBlock!=0xffff) ++s.evictions; }
++extern "C" CODE void perfScreenWaitBegin(void) { ++s.waitDepth; }
++extern "C" CODE void perfScreenWait(uint32_t polls)
++{
++    if (s.waitDepth) --s.waitDepth;
++    if (!enabled()) return;
++    ++s.waitCalls;
++    unsigned scope=s.scope<3?s.scope:0;
++    s.scopePolls[scope]+=polls;
++    if (polls) ++s.scopeBusy[scope];
++    if (polls) ++s.busyCalls;
++    s.polls+=polls;
++    if (polls>s.maxPolls) s.maxPolls=polls;
++}
++extern "C" CODE void perfScreenRequest(uint32_t cmd,uint32_t sector,uint32_t count)
++{
++    if (!enabled()) return;
++    if (cmd<5) ++s.requests[cmd];
++    if (cmd==1 || cmd==3) s.sectorsRead+=count;
++    if (cmd==2 || cmd==4) s.sectorsWritten+=count;
++    s.lastCmd=cmd;s.lastSector=sector;
++}
++extern "C" CODE void perfScreenLog(void) { if (enabled()) ++s.logCalls; }
++extern "C" CODE void perfScreenSync(void) { if (enabled()) ++s.syncCalls; }
++
++// Scope attribution counts ONLY software poll iterations, never elapsed time.
++extern "C" CODE uint32_t perfScreenEnterScope(uint32_t scope)
++{
++    uint32_t old=s.scope;
++    if (s.active && gPerfConfig.enabled==1) s.scope=scope<3?scope:0;
++    return old;
++}
++extern "C" CODE void perfScreenLeaveScope(uint32_t old)
++{
++    if (s.active && gPerfConfig.enabled==1) s.scope=old<3?old:0;
++}
++static CODE void beginSample()
++{
++    // Owned diagnostic object only; volatile byte loop avoids libc/FS imports.
++    volatile uint8_t* bytes=reinterpret_cast<volatile uint8_t*>(&s);
++    for (unsigned i=0;i<__builtin_offsetof(PerfState,reserved);++i) bytes[i]=0;
++    s.active=1;s.uiFlags=ALLOWED|SAMPLING; // must release keys before stop
++}
++
++// This generated include reuses the previously tested original 5x7 patterns.
++#include "freeze_font.inc"
++static CODE unsigned glyph(char c)
++{
++    if (c>='0' && c<='9') return c-'0'+1;
++    if (c>='A' && c<='Z') return c-'A'+11;
++    return 0;
++}
++static CODE void character(volatile uint16_t* fb,unsigned row,unsigned col,char c)
++{
++    unsigned g=glyph(c);
++    for (unsigned y=0;y<7;++y) for (unsigned x=0;x<5;++x)
++        if (font[g][y]&(1u<<(4-x))) fb[(row*8+y)*256+col*8+x]=0xffff;
++}
++static CODE void label(volatile uint16_t* fb,unsigned row,const char* text)
++{
++    for (unsigned col=0;col<32 && text[col];++col) character(fb,row,col,text[col]);
++}
++static CODE void number(volatile uint16_t* fb,unsigned row,unsigned col,uint32_t value)
++{
++    for (int x=7;x>=0;--x) { character(fb,row,col+x,char('0'+value%10));value/=10; }
++}
++static CONST const char rowText[]=
++ "D2 SD PRE BAKE\0"
++ "FROZEN POWER OFF\0"
++ "CART LOAD\0"
++ "PRE LOAD\0"
++ "SD LOAD\0"
++ "OOB FILL\0"
++ "UNIQUE          RLOAD\0"
++ "EVICT           SLOW\0"
++ "WAIT CALLS\0"
++ "BUSY CALLS\0"
++ "POLL SUM\0"
++ "POLL MAX\0"
++ "SD READS\0"
++ "SD WRITES\0"
++ "SECTORS R\0"
++ "SECTORS W\0"
++ "BOOT SD READS\0"
++ "WRITE ATTEMPTS\0"
++ "STOP CODE\0"
++ "PRE VERIFIED\0"
++ "LOG POLLS\0"
++ "PRE POLLS\0"
++ "OTHER POLLS\0"
++ "VBLANKS\0"
++;
++static CONST const uint16_t rowOffsets[]={0,15,32,42,51,59,68,90,111,122,133,142,151,160,170,180,190,204,219,229,242,252,262,274};
++static CODE void draw(volatile uint16_t* fb)
++{
++    for (unsigned i=0;i<256*192;++i) fb[i]=0x8000;
++    for (unsigned r=0;r<24;++r) label(fb,r,rowText+rowOffsets[r]);
++    number(fb,2,23,s.starts[0]);number(fb,3,23,s.starts[1]);
++    number(fb,4,23,s.starts[3]);number(fb,5,23,s.starts[2]);
++    number(fb,6,7,s.unique);number(fb,6,24,s.reloads);
++    number(fb,7,7,s.evictions);number(fb,7,24,s.slowHits);
++    number(fb,8,23,s.waitCalls);number(fb,9,23,s.busyCalls);
++    number(fb,10,23,s.polls);number(fb,11,23,s.maxPolls);
++    number(fb,12,23,s.requests[1]+s.requests[3]);
++    number(fb,13,23,s.requests[2]+s.requests[4]);
++    number(fb,14,23,s.sectorsRead);number(fb,15,23,s.sectorsWritten);
++    for (unsigned i=0;i<4;++i) number(fb,16+i,23,s.reserved[i]);
++    number(fb,20,23,s.scopePolls[1]);number(fb,21,23,s.scopePolls[2]);
++    number(fb,22,23,s.scopePolls[0]);number(fb,23,23,s.ticks);
++}
++// Pure predicate: use ONLY the free LCDC capture bank, not the displayed bank.
++static CODE unsigned chooseBank(uint32_t c,uint32_t d,uint32_t capture,uint32_t ipc,uint32_t saveState)
++{
++    if ((capture&0x80000000) || saveState || (((ipc>>8)^ipc)&15)) return NO_BANK;
++    if (c==0x80 && d==0x84) return 2;
++    if (c==0x84 && d==0x80) return 3;
++    return NO_BANK;
++}
++static CODE bool wantsSnapshot(uint32_t keys)
++{
++    if ((keys&COMBO)!=0) { s.uiFlags|=ARMED;return false; }
++    return (s.uiFlags&(ALLOWED|ARMED))==(ALLOWED|ARMED);
++}
++
++#ifndef PERF_HOST_TEST
++[[noreturn]] static CODE void freeze(unsigned bank)
++{
++    // Called in VBlank IRQ only after eligibility checks, never resume the VM.
++    *(volatile uint32_t*)0x04000208=0; // ARM9 IME only
++    *(volatile uint32_t*)0x04000064=0; // completed capture stays stopped
++    s.active=0;s.uiFlags|=FROZEN;
++    auto fb=(volatile uint16_t*)(0x06800000+bank*0x20000);
++    draw(fb);
++    // LCDC is cached by this runner's MPU. Commit ONLY this free bank's pixels.
++    dc_flushRange((void*)fb,256*192*2);
++    dc_drainWriteBuffer();
++    *(volatile uint32_t*)0x04000000=0x20000|(bank<<18); // main LCD framebuffer
++    *(volatile uint16_t*)0x0400006C=0; // reveal the previously dimmed other LCD
++    for (;;) asm volatile("nop");
++}
++#endif
++
++extern "C" CODE void perfScreenInit(void)
++{
++    // D1: no sampling and no diagnostic backlight/display IPC at startup.
++    // Keep the owned state allocation to preserve X1's live memory layout.
++    s.active=0;s.uiFlags=0;
++}
++extern "C" CODE void perfScreenVblankHook(void)
++{
++    // D1: no key reads, sampling, heartbeat, or gameplay freeze entry point.
++    return;
++}
++
++// Persistent boot audit words: reads, rejected writes, stop reason, validated pre.
++extern "C" void x1CountRead(void) { ++s.reserved[0]; }
++extern "C" void x1PreVerified(void) { s.reserved[3]=1; }
++extern "C" bool x1HeartbeatEnabled(void) { return false; }
++#ifndef PERF_HOST_TEST
++extern "C" __attribute__((noreturn)) void x1Stop(uint32_t code)
++{
++    s.reserved[2]=code;
++    unsigned bank=(*(volatile uint8_t*)0x04000242==0x80)?2:
++                  (*(volatile uint8_t*)0x04000243==0x80)?3:NO_BANK;
++    if (bank!=NO_BANK) freeze(bank);
++    // Never reconfigure an unknown VRAM mapping to force an error display.
++    *(volatile uint32_t*)0x04000208=0;
++    for (;;) asm volatile("nop");
++}
++extern "C" __attribute__((noreturn)) void x1BlockedWrite(void)
++{
++    ++s.reserved[1];x1Stop(X1_WRITE_ATTEMPT);
++}
++#endif
++
++// Four-state one-way boot write gate, using an existing owned diagnostic word.
++// 0(initial, closed) -> OPEN -> CLOSED -> SEALED; warm boot goes 0 -> SEALED.
++// No additional globals, game RAM, timers, clock or firmware operations.
++extern "C" bool d2BootWritesAllowed(void) { return s.reserved[2]==0xD2B001u; }
++extern "C" CODE void d2BeginBootWrites(void)
++{
++    if (s.reserved[2]!=0) x1Stop(48);
++    s.reserved[2]=0xD2B001u;
++}
++extern "C" void d2EndBootWrites(void)
++{
++    if (!d2BootWritesAllowed()) x1Stop(48);
++#ifndef PERF_HOST_TEST
++    fs_waitForCompletionOfCurrentTransaction(false);
++#endif
++    s.reserved[2]=0xD2B002u;
++}
++extern "C" void d2SealRuntime(void)
++{
++    if (s.reserved[2]!=0 && s.reserved[2]!=0xD2B002u) x1Stop(48);
++#ifndef PERF_HOST_TEST
++    fs_waitForCompletionOfCurrentTransaction(false);
++#endif
++    s.reserved[2]=0xD2B003u;
++}
+diff --git a/code/core/arm9/source/PerfScreen.h b/code/core/arm9/source/PerfScreen.h
+new file mode 100644
+--- /dev/null
++++ b/code/core/arm9/source/PerfScreen.h
+@@ -0,0 +1,20 @@
++#pragma once
++#include <stdint.h>
++#ifdef __cplusplus
++extern "C" {
++#endif
++void perfScreenInit(void);
++void perfScreenVblankHook(void);
++void perfScreenLoad(uint32_t block, uint32_t source, uint32_t state);
++void perfScreenSlowHit(void);
++void perfScreenVictim(uint32_t block, uint32_t oldBlock);
++void perfScreenWait(uint32_t polls);
++void perfScreenRequest(uint32_t cmd, uint32_t sector, uint32_t count);
++void perfScreenLog(void);
++void perfScreenSync(void);
++void perfScreenWaitBegin(void);
++uint32_t perfScreenEnterScope(uint32_t scope);
++void perfScreenLeaveScope(uint32_t old);
++#ifdef __cplusplus
++}
++#endif
+diff --git a/code/core/arm9/source/SdCache/SdCache.c b/code/core/arm9/source/SdCache/SdCache.c
+--- a/code/core/arm9/source/SdCache/SdCache.c
++++ b/code/core/arm9/source/SdCache/SdCache.c
+@@ -12,6 +12,7 @@
+ #include "MemCopy.h"
+ #include "Slot2.h"
+ #include "Slot2Diag.h"
++#include "PerfScreen.h"
+ 
+ typedef struct
+ {
+@@ -195,6 +196,7 @@
+     void* currentCacheBlock = sdc_romBlockToCacheBlock[romBlock];
+     if (currentCacheBlock)
+     {
++        perfScreenSlowHit();
+         sCacheBlockUsed[((u32)currentCacheBlock - (u32)sdc_cache) / SDC_BLOCK_SIZE] = 1;
+         arm_restoreIrqs(irqs);
+         return currentCacheBlock;
+@@ -224,6 +226,7 @@
+         }
+     }
+     u32 oldRomBlock = sCacheBlockToRomBlock[cacheBlock];
++    perfScreenVictim(romBlock, oldRomBlock);
+     if (oldRomBlock != SDC_ROM_BLOCK_INVALID)
+     {
+         sdc_romBlockToCacheBlock[oldRomBlock] = NULL;
+@@ -254,7 +257,9 @@
+     arm_restoreIrqs(irqs);
+     if (sector != 0)
+     {
++        u32 perfScope = perfScreenEnterScope(2);
+         irqs = fs_waitForCompletion(&waitToken, true);
++        perfScreenLeaveScope(perfScope);
+         slot2DiagTrace(romBlock, gSlot2Active ? SLOT2DIAG_SRC_PRE : SLOT2DIAG_SRC_SD,
+             SLOT2DIAG_STATE_DONE);
+     }
+diff --git a/code/core/arm9/source/Slot2Diag.cpp b/code/core/arm9/source/Slot2Diag.cpp
+--- a/code/core/arm9/source/Slot2Diag.cpp
++++ b/code/core/arm9/source/Slot2Diag.cpp
+@@ -1,5 +1,7 @@
+ #include "common.h"
+ #include "Slot2Diag.h"
++#include "PerfScreen.h"
++#include "X1Readonly.h"
+ 
+ // Runtime ROM-load diagnostics (full diagnostic build).
+ //
+@@ -43,6 +45,7 @@
+ extern "C" [[gnu::section(".ewram")]]
+ void slot2DiagTrace(u32 romBlock, u8 source, u8 state)
+ {
++    perfScreenLoad(romBlock, source, state);
+     Slot2DiagEntry* e = &sDiagRing[sDiagRingHead % SLOT2DIAG_RING_SIZE];
+     e->romBlock = romBlock;
+     e->source = source;
+@@ -57,6 +60,7 @@
+ extern "C" [[gnu::section(".ewram")]]
+ void slot2DiagVblankHook(void)
+ {
++    if (!x1HeartbeatEnabled()) return; // X1: no tick logging or keepalive I/O
+     sDiagIrqCount++;
+     if ((sDiagIrqCount % SLOT2DIAG_FLUSH_INTERVAL) != 0)
+         return;
+diff --git a/code/core/arm9/source/X1Readonly.h b/code/core/arm9/source/X1Readonly.h
+new file mode 100644
+--- /dev/null
++++ b/code/core/arm9/source/X1Readonly.h
+@@ -0,0 +1,19 @@
++#pragma once
++#include <stdint.h>
++#ifdef __cplusplus
++extern "C" {
++#endif
++enum { X1_BAD_PRE=10,X1_NO_CART=11,X1_NO_LAUNCH_FILE=12,X1_BAD_PATCH=13,
++       X1_APPLY_FAILED=14,X1_SD_SAVE_FALLBACK=15,X1_WRITE_ATTEMPT=20 };
++void x1CountRead(void);
++void x1PreVerified(void);
++void x1BlockedWrite(void) __attribute__((noreturn));
++void x1Stop(uint32_t code) __attribute__((noreturn));
++bool x1HeartbeatEnabled(void);
++bool d2BootWritesAllowed(void);
++void d2BeginBootWrites(void);
++void d2EndBootWrites(void);
++void d2SealRuntime(void);
++#ifdef __cplusplus
++}
++#endif
+diff --git a/code/core/arm9/source/freeze_font.inc b/code/core/arm9/source/freeze_font.inc
+new file mode 100644
+--- /dev/null
++++ b/code/core/arm9/source/freeze_font.inc
+@@ -0,0 +1,16 @@
++static CONST const uint8_t font[][7] = {
++ {0,0,0,0,0,0,0},
++ {14,17,19,21,25,17,14},{4,12,4,4,4,4,14},{14,17,1,2,4,8,31},
++ {30,1,1,14,1,1,30},{2,6,10,18,31,2,2},{31,16,16,30,1,1,30},
++ {14,16,16,30,17,17,14},{31,1,2,4,8,8,8},{14,17,17,14,17,17,14},
++ {14,17,17,15,1,1,14},
++ {14,17,17,31,17,17,17},{30,17,17,30,17,17,30},{14,17,16,16,16,17,14},
++ {30,17,17,17,17,17,30},{31,16,16,30,16,16,31},{31,16,16,30,16,16,16},
++ {14,17,16,23,17,17,15},{17,17,17,31,17,17,17},{14,4,4,4,4,4,14},
++ {7,2,2,2,2,18,12},{17,18,20,24,20,18,17},{16,16,16,16,16,16,31},
++ {17,27,21,21,17,17,17},{17,25,21,19,17,17,17},{14,17,17,17,17,17,14},
++ {30,17,17,30,16,16,16},{14,17,17,17,21,18,13},{30,17,17,30,20,18,17},
++ {15,16,16,14,1,1,30},{31,4,4,4,4,4,4},{17,17,17,17,17,17,14},
++ {17,17,17,17,17,10,4},{17,17,17,21,21,21,10},{17,17,10,4,10,17,17},
++ {17,17,10,4,4,4,4},{31,1,2,4,8,16,31}
++};
+diff --git a/code/core/arm9/source/main.cpp b/code/core/arm9/source/main.cpp
+--- a/code/core/arm9/source/main.cpp
++++ b/code/core/arm9/source/main.cpp
+@@ -1,4 +1,6 @@
+ #include "common.h"
++#include "PerfScreen.h"
++#include "X1Readonly.h"
+ #include <libtwl/mem/memVram.h>
+ #include <libtwl/mem/memNtrWram.h>
+ #include <libtwl/mem/memExtern.h>
+@@ -84,9 +86,9 @@
+ [[gnu::section(".ewram.bss")]]
+ static PlainLogger sPlainLogger { LogLevel::All, &sIsNitroOutput };
+ static NullLogger sNullLogger;
+-[[gnu::section(".ewram.bss"), gnu::aligned(32)]]
++[[gnu::section(".ewram.bss"), gnu::aligned(32), gnu::used]]
+ static FIL sLogFile;
+-[[gnu::section(".ewram.bss")]]
++[[gnu::section(".ewram.bss"), gnu::used]]
+ static FileLogger sFileLogger(&sLogFile);
+ ILogger* gLogger;
+ static SplashScreen* sSplashScreen;
+@@ -237,7 +239,7 @@
+     // slot2 cart.
+     UINT br;
+     memset(&gFile, 0, sizeof(gFile));
+-    f_open(&gFile, romPath, FA_OPEN_EXISTING | FA_READ);
++    if (f_open(&gFile, romPath, FA_OPEN_EXISTING | FA_READ)!=FR_OK) x1Stop(X1_NO_LAUNCH_FILE);
+     sdc_init();
+ 
+     // SLOT2 should be accessible now, so copy the first 2MB to Main Memory.
+@@ -259,7 +261,7 @@
+     // patches are baked into the .pre sidecar (original blocks read from the
+     // cart), and the linear region is patched in memory here.
+     gExternalPatch.SetRomSize(gSlot2RomSize);
+-    if (gExternalPatch.TryLoad(gRomHeader))
++    if (!gExternalPatch.TryLoad(gRomHeader)) x1Stop(X1_BAD_PATCH);
+     {
+         gLogger->Log(LogLevel::Debug, "Applying external patches to linear rom...\n");
+         if (!gExternalPatch.ApplyLinearPatches())
+@@ -267,8 +269,7 @@
+             gLogger->Log(LogLevel::Fatal, "Failed to apply external patches (%u blocks), refusing to boot\n",
+                 gExternalPatch.GetFailedBlockCount());
+             // Fail closed: never run a game with partially applied patches.
+-            GFX_PLTT_BG_MAIN[0] = 0x1F << 10;
+-            while (true);
++            x1Stop(X1_APPLY_FAILED);
+         }
+     }
+     gLogger->Log(LogLevel::Debug, "slot2diag boot size=%u patchBlocks=%u\n",
+@@ -311,8 +312,7 @@
+     slot2LogFlush();
+     if (g_useSlot2Save && !slot2CartridgeGameCodeMatches())
+     {
+-        gLogger->Log(LogLevel::Debug, "Slot2 save disabled: cartridge game code mismatch\n");
+-        g_useSlot2Save = false;
++        x1Stop(X1_SD_SAVE_FALLBACK); // refuse before any SD save file is opened
+     }
+     if (gameSettings.saveType == GbaSaveType::None)
+     {
+@@ -569,18 +569,7 @@
+         while (1);
+     }
+ 
+-    // Real-hardware boot log: always write to /_gba/gbarunner3.log (truncated
+-    // each boot) so patch/bake problems can be diagnosed on the device. The
+-    // isNitro emulator has its own debug output and is skipped here.
+-    if (gLogger == &sNullLogger)
+-    {
+-        f_mkdir("/_gba"); // ok if it already exists
+-        if (sFileLogger.Open("/_gba/gbarunner3.log"))
+-        {
+-            gLogger = &sFileLogger;
+-            gLogger->Log(LogLevel::Debug, "=== GBARunner3 boot log ===\n");
+-        }
+-    }
++    // X1: retain NullLogger; no mkdir, create/truncate, or file logger open.
+ 
+     // if (Environment::SupportsAgbSemihosting())
+         // mountAgbSemihosting();
+@@ -602,9 +591,9 @@
+     }
+     else
+     {
+-        gSlot2Active = false;
+-        loadGbaRom(romPath);
+-    }
++        x1Stop(X1_NO_CART);
++    }
++    d2SealRuntime(); // no SD writes from here through retail-save/gameplay
+     char* romExtension = strrchr(romPath, '.');
+     if (romExtension)
+     {
+@@ -615,6 +604,7 @@
+     }
+     loadGameSpecificSettings();
+     handleSave(romPath);
++    if (!g_useSlot2Save) x1Stop(X1_SD_SAVE_FALLBACK);
+     SelfModifyingPatches().ApplyPatches(gAppSettingsService.GetAppSettings().runSettings);
+ 
+     waitSplashScreenAnimation();
+@@ -651,6 +641,7 @@
+     setupArm9Clock();
+ 
+     hic_initialize();
++    perfScreenInit();
+     vm_nestedIrqLevel = 0;  // restore nested irq level
+     rtos_setIrqMask(RTOS_IRQ_VBLANK);
+     rtos_ackIrqMask(~0u);

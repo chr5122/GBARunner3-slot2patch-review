@@ -1,0 +1,305 @@
+diff --git a/code/core/arm9/source/Fat/FsIpc.cpp b/code/core/arm9/source/Fat/FsIpc.cpp
+--- a/code/core/arm9/source/Fat/FsIpc.cpp
++++ b/code/core/arm9/source/Fat/FsIpc.cpp
+@@ -105,7 +105,7 @@
+ static void sendIpcCommand()
+ {
+     if (sIpcCommand.cmd==FS_IPC_CMD_DLDI_WRITE_SECTORS || sIpcCommand.cmd==FS_IPC_CMD_DSI_SD_WRITE_SECTORS)
+-        x1BlockedWrite();
++        if (!d2BootWritesAllowed()) x1BlockedWrite();
+     if (sIpcCommand.cmd==FS_IPC_CMD_DLDI_READ_SECTORS || sIpcCommand.cmd==FS_IPC_CMD_DSI_SD_READ_SECTORS)
+         x1CountRead();
+     perfScreenRequest(sIpcCommand.cmd, sIpcCommand.sector, sIpcCommand.count);
+diff --git a/code/core/arm9/source/Fat/diskio.cpp b/code/core/arm9/source/Fat/diskio.cpp
+--- a/code/core/arm9/source/Fat/diskio.cpp
++++ b/code/core/arm9/source/Fat/diskio.cpp
+@@ -72,7 +72,7 @@
+ 
+ extern "C" DRESULT disk_write(BYTE pdrv, const BYTE *buff, DWORD sector, UINT count)
+ {
+-    x1BlockedWrite(); // fail closed before ANY device writer or fake success
++    if (!d2BootWritesAllowed() || (pdrv!=DEV_FAT && pdrv!=DEV_SD)) x1BlockedWrite(); // boot cache only
+     if (pdrv == DEV_FAT)
+     {
+         fs_writeSectors(FS_DEVICE_DLDI, buff, sector, count);
+diff --git a/code/core/arm9/source/Patches/ExternalPatch.cpp b/code/core/arm9/source/Patches/ExternalPatch.cpp
+--- a/code/core/arm9/source/Patches/ExternalPatch.cpp
++++ b/code/core/arm9/source/Patches/ExternalPatch.cpp
+@@ -245,15 +245,19 @@
+ }
+ 
+ [[gnu::section(".ewram")]]
+-bool ExternalPatch::TryLoadPrepatch(u32 patchHash)
++bool ExternalPatch::TryLoadPrepatch(u32 patchHash, const char* pathOverride)
+ {
+     if (mIndexCount == 0)
+         return false;
+ 
+-    char prePath[64];
+-    getPrepatchPath(prePath, sizeof(prePath), mHeader.gamecode, mHeader.version);
+-
+-    if (f_open(&gPrepatchFile, prePath, FA_READ | FA_OPEN_EXISTING) != FR_OK)
++    // Boot-only validation scratch; cache fetches have not begun yet.
++    struct ValidationScratch { char path[64]; PrepatchHeader header; PrepatchBlockEntry entry; };
++    static_assert(sizeof(ValidationScratch) <= SDC_BLOCK_SIZE);
++    auto& scratch = *reinterpret_cast<ValidationScratch*>(&sdc_cache[3][0]);
++    char* prePath = scratch.path;
++    getPrepatchPath(prePath, 64, mHeader.gamecode, mHeader.version);
++
++    if (f_open(&gPrepatchFile, pathOverride ? pathOverride : prePath, FA_READ | FA_OPEN_EXISTING) != FR_OK)
+         return false;
+ 
+     auto reject = [&]() -> bool {
+@@ -262,7 +266,7 @@
+     };
+ 
+     UINT br;
+-    PrepatchHeader header;
++    PrepatchHeader& header = scratch.header;
+     if (f_read(&gPrepatchFile, &header, sizeof(header), &br) != FR_OK || br != sizeof(header))
+         return reject();
+     if (header.valid != 1 || header.formatVersion != PREPATCH_FORMAT_VERSION)
+@@ -289,7 +293,7 @@
+     // Entries must match the in-memory index exactly (order, ids, offsets).
+     for (u32 i = 0; i < mIndexCount; i++)
+     {
+-        PrepatchBlockEntry entry;
++        PrepatchBlockEntry& entry = scratch.entry;
+         if (f_read(&gPrepatchFile, &entry, sizeof(entry), &br) != FR_OK || br != sizeof(entry))
+             return reject();
+         if (entry.blockIndex != sBlockIndex[i].block_index
+@@ -310,10 +314,121 @@
+     return true;
+ }
+ 
+-[[gnu::section(".ewram")]]
++// D2: boot-only baker. Never truncate/delete an existing sidecar.
++// Uses already-owned SD-cache blocks 0/1/2 before any cache fetches.
++[[gnu::section(".ewram"), gnu::noinline]]
+ bool ExternalPatch::BakePrepatch(u32 patchHash)
+ {
+-    (void)patchHash;x1Stop(X1_BAD_PRE);
++    struct BootScratch {
++        char pre[64], temp[64], backup[64];
++        FILINFO info;
++        PrepatchHeader header;
++    };
++    static_assert(sizeof(BootScratch) <= SDC_BLOCK_SIZE);
++    auto& scratch = *reinterpret_cast<BootScratch*>(&sdc_cache[2][0]);
++    char* prePath = scratch.pre;
++    char* tempPath = scratch.temp;
++    char* backupPath = scratch.backup;
++    FILINFO& info = scratch.info;
++    getPrepatchPath(prePath, 64, mHeader.gamecode, mHeader.version);
++    memcpy(tempPath, prePath, 64);
++    memcpy(backupPath, prePath, 64);
++    u32 pathLength = strlen(prePath);
++    memcpy(tempPath + pathLength - 3, "tmp", 4);
++    memcpy(backupPath + pathLength - 3, "bak", 4);
++    FRESULT res = f_stat(prePath, &info);
++    bool hadOld = res == FR_OK;
++    if ((hadOld && (info.fattrib & AM_DIR)) ||
++        (!hadOld && res != FR_NO_FILE && res != FR_NO_PATH)) x1Stop(31);
++    res = f_stat(tempPath, &info);
++    if (res != FR_NO_FILE && res != FR_NO_PATH) x1Stop(32);
++    if (hadOld) {
++        res = f_stat(backupPath, &info);
++        if (res != FR_NO_FILE && res != FR_NO_PATH) x1Stop(33);
++    }
++    FATFS* fs = gFile.obj.fs;
++    if (!fs || (fs->pdrv != DEV_FAT && fs->pdrv != DEV_SD) ||
++        !fs->csize || (fs->csize & (fs->csize - 1))) x1Stop(34);
++    u32 clusterSize = fs->csize * 512;
++    u32 indexBytes = mIndexCount * sizeof(PrepatchBlockEntry);
++    u32 dataBase = (sizeof(PrepatchHeader) + indexBytes + clusterSize - 1) & ~(clusterSize - 1);
++    PrepatchHeader& header = scratch.header;
++    header = {};
++    header.formatVersion = PREPATCH_FORMAT_VERSION;
++    header.patchHash = patchHash;
++    header.patchedBlockCount = mIndexCount;
++    header.romSize = mRomSize != 0 ? mRomSize : (u32)f_size(&gFile);
++    header.romHash = ComputeRomSourceHash();
++    if (!mIndexCount || !header.romHash) x1Stop(35);
++
++    d2BeginBootWrites();
++    bool opened = false;
++    auto fail = [&](u32 code) -> bool {
++        // Preserve temp/backup for inspection; never unlink on failure.
++        if (opened) f_close(&gPrepatchFile);
++        sPrepatchTableValid = false;
++        d2EndBootWrites();
++        x1Stop(code);
++    };
++    res = f_mkdir(GAME_PREPATCH_DIR_PATH);
++    if (res != FR_OK && res != FR_EXIST) return fail(36);
++    if (f_open(&gPrepatchFile, tempPath, FA_READ | FA_WRITE | FA_CREATE_NEW) != FR_OK) return fail(37);
++    opened = true;
++    UINT bw;
++    if (f_write(&gPrepatchFile, &header, sizeof(header), &bw) != FR_OK || bw != sizeof(header)) return fail(38);
++    for (u32 i=0; i<mIndexCount; ++i) {
++        PrepatchBlockEntry entry = {sBlockIndex[i].block_index, 0, dataBase + i * SDC_BLOCK_SIZE};
++        if (f_write(&gPrepatchFile, &entry, sizeof(entry), &bw) != FR_OK || bw != sizeof(entry)) return fail(38);
++    }
++    u32 pad = dataBase - sizeof(header) - indexBytes;
++    memset(BAKE_BUF, 0, SDC_BLOCK_SIZE);
++    while (pad) {
++        u32 n = pad > SDC_BLOCK_SIZE ? SDC_BLOCK_SIZE : pad;
++        if (f_write(&gPrepatchFile, BAKE_BUF, n, &bw) != FR_OK || bw != n) return fail(38);
++        pad -= n;
++    }
++    for (u32 i=0; i<mIndexCount; ++i) {
++        const auto& entry = sBlockIndex[i];
++        if (!ReadRomBlock(entry.block_index, BAKE_BUF) ||
++            !ApplyIPSPatches(entry.block_patch_address, entry.block_patch_size, BAKE_BUF)) return fail(39);
++        if (f_write(&gPrepatchFile, BAKE_BUF, SDC_BLOCK_SIZE, &bw) != FR_OK || bw != SDC_BLOCK_SIZE) return fail(38);
++    }
++    // Flush the complete valid=0 payload before committing the temporary header.
++    if (f_sync(&gPrepatchFile) != FR_OK) return fail(40);
++    header.valid = 1;
++    if (f_lseek(&gPrepatchFile, 0) != FR_OK ||
++        f_write(&gPrepatchFile, &header, sizeof(header), &bw) != FR_OK || bw != sizeof(header) ||
++        f_sync(&gPrepatchFile) != FR_OK) return fail(40);
++    if (f_close(&gPrepatchFile) != FR_OK) return fail(41);
++    opened = false;
++
++    // Reopen READ ONLY, validate the ordinary metadata/map, then compare EVERY
++    // raw-sector block to independently recomputed cart+patch contents.
++    if (!TryLoadPrepatch(patchHash, tempPath)) return fail(42);
++    opened = true;
++    u8* verify = &sdc_cache[1][0];
++    for (u32 i=0; i<mIndexCount; ++i) {
++        const auto& entry = sBlockIndex[i];
++        if (!ReadRomBlock(entry.block_index, BAKE_BUF) ||
++            !ApplyIPSPatches(entry.block_patch_address, entry.block_patch_size, BAKE_BUF)) return fail(43);
++        u32 sector = externalPatch_getBakedBlockSector(entry.block_index);
++        if (!sector) return fail(44);
++        for (u32 j=0; j<SDC_BLOCK_SIZE; ++j) verify[j] = BAKE_BUF[j] ^ 0xFF;
++        dc_flushRange(verify, SDC_BLOCK_SIZE);
++        dc_drainWriteBuffer(); // preserve poison across the read-side invalidate
++        fs_readSectors(fs->pdrv == DEV_FAT ? FS_DEVICE_DLDI : FS_DEVICE_DSI_SD,
++                       verify, sector, SDC_BLOCK_SIZE / 512);
++        if (memcmp(BAKE_BUF, verify, SDC_BLOCK_SIZE)) return fail(45);
++    }
++    if (f_close(&gPrepatchFile) != FR_OK) return fail(41);
++    opened = false;
++    sPrepatchTableValid = false;
++    // FAT rename is NOT a power-loss-atomic multi-file transaction. Each result
++    // is checked; the old file is retained under .bak and never deleted here.
++    if (hadOld && f_rename(prePath, backupPath) != FR_OK) return fail(46);
++    if (f_rename(tempPath, prePath) != FR_OK) return fail(47);
++    d2EndBootWrites(); // drain outstanding I/O and permanently close the window
++    return true;
+ }
+ 
+ [[gnu::section(".ewram")]]
+@@ -400,8 +515,12 @@
+         return false;
+     }
+ 
+-    // Strict X1: never create, rebuild, remove, or fall back from this cache.
+-    if (!TryLoadPrepatch(patchHash)) x1Stop(X1_BAD_PRE);
++    // D2: warm cache is read-only; cold cache writes only inside the baker.
++    if (!TryLoadPrepatch(patchHash)) {
++        if (!BakePrepatch(patchHash)) x1Stop(30);
++        // The window is closed before reopening the final name for runtime.
++        if (!TryLoadPrepatch(patchHash)) x1Stop(49);
++    }
+     x1PreVerified();
+     return true;
+ }
+diff --git a/code/core/arm9/source/Patches/ExternalPatch.h b/code/core/arm9/source/Patches/ExternalPatch.h
+--- a/code/core/arm9/source/Patches/ExternalPatch.h
++++ b/code/core/arm9/source/Patches/ExternalPatch.h
+@@ -109,7 +109,7 @@
+ private:
+     bool ApplyIPSPatches(u32 patchOffset, u32 patchSize, u8* targetBuf);
+     bool LoadBlockIndex();
+-    bool TryLoadPrepatch(u32 patchHash);
++    bool TryLoadPrepatch(u32 patchHash, const char* pathOverride = nullptr);
+     bool BakePrepatch(u32 patchHash);
+     bool ReadRomBlock(u32 romBlock, u8* dst);
+     u32 ComputeRomSourceHash();
+diff --git a/code/core/arm9/source/PerfScreen.cpp b/code/core/arm9/source/PerfScreen.cpp
+--- a/code/core/arm9/source/PerfScreen.cpp
++++ b/code/core/arm9/source/PerfScreen.cpp
+@@ -6,6 +6,7 @@
+ #endif
+ #ifndef PERF_HOST_TEST
+ #include "common.h"
++#include "Fat/FsIpc.h"
+ #include "Slot2Diag.h"
+ #include "SystemIpc.h"
+ #include "Save/Save.h"
+@@ -25,7 +26,7 @@
+ 
+ struct PerfConfig { uint32_t magic[3]; volatile uint32_t enabled; uint32_t end; };
+ extern "C" {
+-CONFIG PerfConfig gPerfConfig={{0x33524650,0x30313230,0x31445253},0,0x21444e45};
++CONFIG PerfConfig gPerfConfig={{0x33524650,0x30313230,0x32445253},0,0x21444e45};
+ }
+ struct LoadEvent { uint32_t block,source,state; };
+ struct PerfState {
+@@ -126,7 +127,7 @@
+     for (int x=7;x>=0;--x) { character(fb,row,col+x,char('0'+value%10));value/=10; }
+ }
+ static CONST const char rowText[]=
+- "D1 SD READONLY\0"
++ "D2 SD PRE BAKE\0"
+  "FROZEN POWER OFF\0"
+  "CART LOAD\0"
+  "PRE LOAD\0"
+@@ -233,3 +234,29 @@
+     ++s.reserved[1];x1Stop(X1_WRITE_ATTEMPT);
+ }
+ #endif
++
++// Four-state one-way boot write gate, using an existing owned diagnostic word.
++// 0(initial, closed) -> OPEN -> CLOSED -> SEALED; warm boot goes 0 -> SEALED.
++// No additional globals, game RAM, timers, clock or firmware operations.
++extern "C" bool d2BootWritesAllowed(void) { return s.reserved[2]==0xD2B001u; }
++extern "C" CODE void d2BeginBootWrites(void)
++{
++    if (s.reserved[2]!=0) x1Stop(48);
++    s.reserved[2]=0xD2B001u;
++}
++extern "C" void d2EndBootWrites(void)
++{
++    if (!d2BootWritesAllowed()) x1Stop(48);
++#ifndef PERF_HOST_TEST
++    fs_waitForCompletionOfCurrentTransaction(false);
++#endif
++    s.reserved[2]=0xD2B002u;
++}
++extern "C" void d2SealRuntime(void)
++{
++    if (s.reserved[2]!=0 && s.reserved[2]!=0xD2B002u) x1Stop(48);
++#ifndef PERF_HOST_TEST
++    fs_waitForCompletionOfCurrentTransaction(false);
++#endif
++    s.reserved[2]=0xD2B003u;
++}
+diff --git a/code/core/arm9/source/X1Readonly.h b/code/core/arm9/source/X1Readonly.h
+--- a/code/core/arm9/source/X1Readonly.h
++++ b/code/core/arm9/source/X1Readonly.h
+@@ -10,6 +10,10 @@
+ void x1BlockedWrite(void) __attribute__((noreturn));
+ void x1Stop(uint32_t code) __attribute__((noreturn));
+ bool x1HeartbeatEnabled(void);
++bool d2BootWritesAllowed(void);
++void d2BeginBootWrites(void);
++void d2EndBootWrites(void);
++void d2SealRuntime(void);
+ #ifdef __cplusplus
+ }
+ #endif
+diff --git a/code/core/arm9/source/main.cpp b/code/core/arm9/source/main.cpp
+--- a/code/core/arm9/source/main.cpp
++++ b/code/core/arm9/source/main.cpp
+@@ -593,6 +593,7 @@
+     {
+         x1Stop(X1_NO_CART);
+     }
++    d2SealRuntime(); // no SD writes from here through retail-save/gameplay
+     char* romExtension = strrchr(romPath, '.');
+     if (romExtension)
+     {

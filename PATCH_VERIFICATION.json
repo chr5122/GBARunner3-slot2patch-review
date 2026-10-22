@@ -1,0 +1,137 @@
+{
+  "status": "PASS",
+  "upstream_commit": "f8ac25cc8c79ec5a4c624cbd94eeed9e2d1842c9",
+  "libtwl": "e069645bed14a93e149e873e9273f04851e3a04e",
+  "nds_sha256": "7965f4b1a2381a7ad325b1c618cc3b3511fc1287489291243cc8e296ddf6f76b",
+  "nds_size": 227328,
+  "patches": [
+    {
+      "patch": "10_D2_vs_D1_review.patch",
+      "changes": [
+        {
+          "path": "code/core/arm9/source/Fat/FsIpc.cpp",
+          "before_sha256": "05212e6be38c4f8b8433759f9417e82ed58f746285c6a3a89e5623ea6e4a914d",
+          "after_sha256": "942aff460f7ed8df03d68d0ef67b6cccf22bfcb760f6a3638b293f3711500345"
+        },
+        {
+          "path": "code/core/arm9/source/Fat/diskio.cpp",
+          "before_sha256": "07df3df710d6a700f1f744da9090620a358c0e661afab8e8b3e9f54e6de54ba0",
+          "after_sha256": "2bf52d8d9583cb50a5ffa8f7f0ad55d29b338befa8ddd67fc4cf1705080fe7a3"
+        },
+        {
+          "path": "code/core/arm9/source/Patches/ExternalPatch.cpp",
+          "before_sha256": "9acb8f14e45f22a962d4767d8b0d7c75eb0c6e4cc3041322893c465b811ecc55",
+          "after_sha256": "c9c4834d9e6b065dd03f97e6d10ecf8fc855f21b92e80ece674fd5ba2e75d0ba"
+        },
+        {
+          "path": "code/core/arm9/source/Patches/ExternalPatch.h",
+          "before_sha256": "b18492df676bea271e4f6d21b78f621c89ce34b1ba3ba2fc99112d74c160291f",
+          "after_sha256": "b09c6dfa0f326a002798338a0f0a214300cbc2477b007b26fb9067d280602710"
+        },
+        {
+          "path": "code/core/arm9/source/PerfScreen.cpp",
+          "before_sha256": "5d495627f0a776087a19b06b7ea3db48443aab0bc4ccce1d62c82787d475d62b",
+          "after_sha256": "6eb8c8ef2001e2c9aa702ea481a35a4df22cda71420991d3931f98a4db75e6c2"
+        },
+        {
+          "path": "code/core/arm9/source/X1Readonly.h",
+          "before_sha256": "feef492f3b9e8152598ce88966b22869f5363b93f416cc592e439f00b254ee76",
+          "after_sha256": "a57234cd2508468085213edf94fb188fa662d40b2ca01970c20fe5c2e43ca282"
+        },
+        {
+          "path": "code/core/arm9/source/main.cpp",
+          "before_sha256": "6078f289d18ec8ca5fd4db2d8ba4fcd35d8381696738b5f7221fdf398098eba1",
+          "after_sha256": "2b6aae4687b431818df6d5f3b32f39f65b3f4f950a689f271444f80561db0db5"
+        }
+      ],
+      "sha256": "0513f6b8ea186edc63895a6f274b650571a598dc0498438151aa6c3859c3061d",
+      "apply_and_compare": "PASS"
+    },
+    {
+      "patch": "20_FULL_vs_f8ac25c_review.patch",
+      "changes": [
+        {
+          "path": "code/core/arm9/gbarunner9.ld",
+          "before_sha256": "e9e35d8a4fe1f506ac58b8705a3034d41bb10987c5f5d2e17dcb82a290804788",
+          "after_sha256": "01d81b0444a1f538194de6d10849ab880be4f5e93dda261b5d258555986eb510"
+        },
+        {
+          "path": "code/core/arm9/source/Emulator/VBlankIrq.s",
+          "before_sha256": "cc2ab0c5364a54f1342a2ae0a26ef5850f28e3ac1d3d5d07835b66e55053f7d6",
+          "after_sha256": "a85eddaa115125fff19191c7de1a1a6d2c7228554c776f0b9e9b9b168998baa1"
+        },
+        {
+          "path": "code/core/arm9/source/Fat/FsIpc.cpp",
+          "before_sha256": "7f62e2304187f36efc3e7079a1d26f1f5abf9fa0cd08cc4bda0f8b6acf9e31e6",
+          "after_sha256": "942aff460f7ed8df03d68d0ef67b6cccf22bfcb760f6a3638b293f3711500345"
+        },
+        {
+          "path": "code/core/arm9/source/Fat/diskio.cpp",
+          "before_sha256": "9f8d344f02d40487b6938e6a87259063dc9f3add31abd3328e54974c4dfb8978",
+          "after_sha256": "2bf52d8d9583cb50a5ffa8f7f0ad55d29b338befa8ddd67fc4cf1705080fe7a3"
+        },
+        {
+          "path": "code/core/arm9/source/Logger/FileLogger.cpp",
+          "before_sha256": "1c8de46c1e6264a791924606823aaa0e08a607f083492c5251013a0edd7f517a",
+          "after_sha256": "2db0b1c608770347ded5a96e1a5fa8d5dec55b427c014e05fb7356cb909e1666"
+        },
+        {
+          "path": "code/core/arm9/source/MemoryEmulator/HiCodeCacheMappingC.c",
+          "before_sha256": "bb08c914d2467ac458d75dcb239c4b6106a6a0aa3db98b709556fecfdf674692",
+          "after_sha256": "48cfac09e6afec0e867077862598278c18b9587afea7946b041d74f4c7a3bb97"
+        },
+        {
+          "path": "code/core/arm9/source/Patches/ExternalPatch.cpp",
+          "before_sha256": "951ddd9d3bbebbc4d8cec34fef4c0c1a8fc702cc69e54a3601ef49217734dbfb",
+          "after_sha256": "c9c4834d9e6b065dd03f97e6d10ecf8fc855f21b92e80ece674fd5ba2e75d0ba"
+        },
+        {
+          "path": "code/core/arm9/source/Patches/ExternalPatch.h",
+          "before_sha256": "b18492df676bea271e4f6d21b78f621c89ce34b1ba3ba2fc99112d74c160291f",
+          "after_sha256": "b09c6dfa0f326a002798338a0f0a214300cbc2477b007b26fb9067d280602710"
+        },
+        {
+          "path": "code/core/arm9/source/PerfScreen.cpp",
+          "before_sha256": null,
+          "after_sha256": "6eb8c8ef2001e2c9aa702ea481a35a4df22cda71420991d3931f98a4db75e6c2"
+        },
+        {
+          "path": "code/core/arm9/source/PerfScreen.h",
+          "before_sha256": null,
+          "after_sha256": "bb88973ecbe7936a5a310cfb07703fdb9aa7fd4142f8a8a01bb53eb29bec308b"
+        },
+        {
+          "path": "code/core/arm9/source/SdCache/SdCache.c",
+          "before_sha256": "799a1e2bceb2b4e12ea49172262009978ec60ffe6bd05e14ea27992cc15117fe",
+          "after_sha256": "e59fe4423948c55195ecd24193cff68ff9982276814cef6e8401533c692fcd2a"
+        },
+        {
+          "path": "code/core/arm9/source/Slot2Diag.cpp",
+          "before_sha256": "8007eef78b47c198a66a373da3f51320f7c364de05b2cca743a2ead040758502",
+          "after_sha256": "f67eaf0b1ee5d3175aa6e5f047d21dfc544236df03ccc517aa650b535a605c50"
+        },
+        {
+          "path": "code/core/arm9/source/X1Readonly.h",
+          "before_sha256": null,
+          "after_sha256": "a57234cd2508468085213edf94fb188fa662d40b2ca01970c20fe5c2e43ca282"
+        },
+        {
+          "path": "code/core/arm9/source/freeze_font.inc",
+          "before_sha256": null,
+          "after_sha256": "17d54481c865ec3e6719488b14ab31e496fdf1bc0c42369babddb691f3492735"
+        },
+        {
+          "path": "code/core/arm9/source/main.cpp",
+          "before_sha256": "0fee049bfebb64d1a22189f64088cefbc9fb7b3699e0331236904f0840311b8f",
+          "after_sha256": "2b6aae4687b431818df6d5f3b32f39f65b3f4f950a689f271444f80561db0db5"
+        }
+      ],
+      "sha256": "71b7e590d33d7315b3c7a4adf693414efcbe855a9460062efe0f52722afe593a",
+      "apply_and_compare": "PASS"
+    }
+  ],
+  "not_a_minimal_upstream_PR": true,
+  "external_published": true,
+  "physical_validation": "User-reported, not independently reproduced; see FIELD_TESTS.md",
+  "publication_scope": "Approved public review materials only; no upstream PR, release or message"
+}
