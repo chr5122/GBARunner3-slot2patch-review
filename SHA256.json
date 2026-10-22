@@ -23,5 +23,17 @@
   "source/code/core/arm9/source/Slot2Diag.cpp": "f67eaf0b1ee5d3175aa6e5f047d21dfc544236df03ccc517aa650b535a605c50",
   "source/code/core/arm9/source/X1Readonly.h": "a57234cd2508468085213edf94fb188fa662d40b2ca01970c20fe5c2e43ca282",
   "source/code/core/arm9/source/freeze_font.inc": "17d54481c865ec3e6719488b14ab31e496fdf1bc0c42369babddb691f3492735",
-  "source/code/core/arm9/source/main.cpp": "2b6aae4687b431818df6d5f3b32f39f65b3f4f950a689f271444f80561db0db5"
+  "source/code/core/arm9/source/main.cpp": "2b6aae4687b431818df6d5f3b32f39f65b3f4f950a689f271444f80561db0db5",
+  "30_G1_vs_D2_review.patch": "811f9291a8939166489e01ffe7b2d236ad3a37c2b07428d63e217ce4d5afff7e",
+  "G1_AUDIO_POP_FIX.md": "2a358d868ef87cb4d481b7e7903d71cce4d2d03cf023e5737ce5124ef40cd39a",
+  "MAP_DIFF_SUMMARY.md": "ee68d7414ad2fe3d67fd05b7f75be4e4a5b3f033074c1eb96ced28e475f1d90e",
+  "G1_DMA_WRAP.nds": "eefe98a0d2369d18a78e02450e56a50a45c79e20b8f4887e2d1adc1e4063502d",
+  "G1_DMA_WRAP.nds.size_bytes": "227840",
+  "G1_DMA_WRAP.fallback_baseline": "D2",
+  "D2_AUTO_PRE.nds": "7965f4b1a2381a7ad325b1c618cc3b3511fc1287489291243cc8e296ddf6f76b",
+  "D2_AUTO_PRE.nds.size_bytes": "227328",
+  "current/README.md": "6d361b0c783c7fcbc1595f715c426861efc4878932abe078321e3c560884334b",
+  "current/BUILD_REVIEW.md": "e1474fb4dd91dd597a2a1779a52b31a38818b6b13490a68f180ca70835e10485",
+  "current/FIELD_TESTS.md": "dbde7929209ece62b9f4bb77f37d21eb8eaca19ab13042945ee9edc8553c33bd",
+  "G1_append_note": "原有文件哈希保持不动。README.md、BUILD_REVIEW.md、FIELD_TESTS.md 只追加了 G1 段落，当前哈希见 current/ 键。G1_DMA_WRAP.nds 只记录哈希，文件不在本仓库。回退基线是 D2（D2_AUTO_PRE.nds）。"
 }
