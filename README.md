@@ -30,8 +30,13 @@
 | [20_FULL_vs_f8ac25c_review.patch](20_FULL_vs_f8ac25c_review.patch) | 固定上游提交 → 实测 D2 的 15 文件完整源码差异，含诊断/布局遗留 |
 | [PATCH_VERIFICATION.json](PATCH_VERIFICATION.json) | 两份 patch 的基准、逐文件哈希、实际 apply 后比对结果 |
 | [BUILD_REVIEW.md](BUILD_REVIEW.md) | 源码差异复核与构建注意事项 |
+| [G1_AUDIO_POP_FIX.md](G1_AUDIO_POP_FIX.md) | D2 之后的 G1_DMA_WRAP：m4a 声音 DMA 回绕，以及推断边界 |
+| [30_G1_vs_D2_review.patch](30_G1_vs_D2_review.patch) | D2 → G1，只含 `DmaTransfer.c`；基准与上面两份 patch 不同 |
+| [MAP_DIFF_SUMMARY.md](MAP_DIFF_SUMMARY.md) | D2 与 G1 的 ARM9 链接 map 摘要 |
 
 **两份 patch 是不同基准的替代视图，不要一起套用。** 两份均已在独立临时目录实际 apply 后逐字节核对。
+
+`30_G1_vs_D2_review.patch` 是稍后的第三份差异，父本是实测 D2。它单独套在已经包含 D2 版 `DmaTransfer.c` 的树上。已用改前、改后全文核对：`git apply -p1` 之后与 G1 文件逐字节相同。本仓库 `source/` 没有 `DmaTransfer.c`，阅读副本仍是原先那些相对上游有改动的文件。
 
 `source/` 仅包含相对上游新增/变更的源文件，便于网页阅读；不能单独编译它。点击 GitHub 的 **Code → Download ZIP** 可以一次下载全部审核材料。
 
@@ -45,6 +50,17 @@
 
 没有发布 NDS 二进制、游戏 ROM、BIOS、游戏汉化补丁/PRE、存档、SDK、原始照片、访问令牌或私人联系方式。
 构建时文档的“未实机验证”属于历史状态；后续反馈单独记录于 FIELD_TESTS.md，没有篡改冻结的构建报告。
+
+## G1_DMA_WRAP（父本 D2）
+
+D2 之后另有一次只改 ARM9 声音 DMA 的实验，针对宝可梦火红/叶绿切场景、音乐淡出后的爆音。回绕只在 m4a 特征下打开：DMA1 与 DMA2 都在声音 FIFO 模式，且 DMA2 的 SAD 等于 DMA1 的 SAD 加 0x630。说明、波形和布局见 [G1_AUDIO_POP_FIX.md](G1_AUDIO_POP_FIX.md)，补丁是 [30_G1_vs_D2_review.patch](30_G1_vs_D2_review.patch)。
+
+- 记录中的 G1 NDS：227840 B；SHA-256 `eefe98a0d2369d18a78e02450e56a50a45c79e20b8f4887e2d1adc1e4063502d`。文件不在本仓库。
+- 回退基线是 D2：227328 B；SHA-256 `7965f4b1a2381a7ad325b1c618cc3b3511fc1287489291243cc8e296ddf6f76b`。
+- 这两条追加在 [SHA256.json](SHA256.json) 末尾。该文件原有的文件哈希保持不动。本页、BUILD_REVIEW.md、FIELD_TESTS.md 因追加段落，当前内容与 JSON 里保留的旧哈希不一致；当前哈希写在 `current/` 键下。新增文件的哈希也在 JSON 末尾。
+- VBlank 处理偏晚是推断出来的原因。
+- 只增不回绕的 `curSrc` 源自上游 Gericom 的代码。是否影响原版 GBARunner3 尚未测试。
+- 用户实机反馈：切场景没有爆音，长时间游玩正常，存档写回正版卡。范围见 [FIELD_TESTS.md](FIELD_TESTS.md)。
 
 ## 限制与安全
 
