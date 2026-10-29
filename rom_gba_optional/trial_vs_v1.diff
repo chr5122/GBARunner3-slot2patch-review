@@ -1,0 +1,36 @@
+--- a/code/core/arm9/source/main.cpp
++++ b/code/core/arm9/source/main.cpp
+@@ -239,7 +239,14 @@
+     // slot2 cart.
+     UINT br;
+     memset(&gFile, 0, sizeof(gFile));
+-    if (f_open(&gFile, romPath, FA_OPEN_EXISTING | FA_READ)!=FR_OK) x1Stop(X1_NO_LAUNCH_FILE);
++    // Slot-2 trial: the SD .gba placeholder is optional. Without it, bind
++    // gFile to the mounted volume so gFile.obj.fs (csize/pdrv) stays valid.
++    bool sdRomOpen = f_open(&gFile, romPath, FA_OPEN_EXISTING | FA_READ) == FR_OK;
++    if (!sdRomOpen)
++    {
++        memset(&gFile, 0, sizeof(gFile));
++        gFile.obj.fs = &gFatFs;
++    }
+     sdc_init();
+ 
+     // SLOT2 should be accessible now, so copy the first 2MB to Main Memory.
+@@ -247,10 +254,13 @@
+     // Verify the cart copy: the gamecode at 0xAC must match the cart header.
+     u32 sd2m = 0, sd4m = 0;
+     UINT rr;
+-    f_lseek(&gFile, 0x200000);
+-    f_read(&gFile, &sd2m, 4, &rr);
+-    f_lseek(&gFile, 0x400000);
+-    f_read(&gFile, &sd4m, 4, &rr);
++    if (sdRomOpen)
++    {
++        f_lseek(&gFile, 0x200000);
++        f_read(&gFile, &sd2m, 4, &rr);
++        f_lseek(&gFile, 0x400000);
++        f_read(&gFile, &sd4m, 4, &rr);
++    }
+     gLogger->Log(LogLevel::Debug, "cartcopy %08X %08X sz%u h%02X sd2M%08X ca2M%08X sd4M%08X ca4M%08X\n",
+         gRomHeader.gameCode, *(u32*)(ROM_LINEAR_DS_ADDRESS + 0xAC), gSlot2RomSize,
+         ((const u8*)0x08000000)[0x80],

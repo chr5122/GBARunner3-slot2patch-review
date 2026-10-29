@@ -33,6 +33,7 @@
 | [G1_AUDIO_POP_FIX.md](G1_AUDIO_POP_FIX.md) | D2 之后的 G1_DMA_WRAP：m4a 声音 DMA 回绕，以及推断边界 |
 | [30_G1_vs_D2_review.patch](30_G1_vs_D2_review.patch) | D2 → G1，只含 `DmaTransfer.c`；基准与上面两份 patch 不同 |
 | [MAP_DIFF_SUMMARY.md](MAP_DIFF_SUMMARY.md) | D2 与 G1 的 ARM9 链接 map 摘要 |
+| [rom_gba_optional/README.md](rom_gba_optional/README.md) | 试验：补丁模式从烧录卡菜单直接启动时，可不放根目录占位 `rom.gba`。仅 melonDS；NDS 未入库 |
 
 **两份 patch 是不同基准的替代视图，不要一起套用。** 两份均已在独立临时目录实际 apply 后逐字节核对。
 
@@ -61,6 +62,18 @@ D2 之后另有一次只改 ARM9 声音 DMA 的实验，针对宝可梦火红/�
 - VBlank 处理偏晚是推断出来的原因。
 - 只增不回绕的 `curSrc` 源自上游 Gericom 的代码。是否影响原版 GBARunner3 尚未测试。
 - 用户实机反馈：切场景没有爆音，长时间游玩正常，存档写回正版卡。范围见 [FIELD_TESTS.md](FIELD_TESTS.md)。
+
+## rom.gba 占位可选（试验，父本 v1）
+
+试验里的 v1 与上面记录的 G1_DMA_WRAP 哈希相同：卧看 `f8ac25cc8c79ec5a4c624cbd94eeed9e2d1842c9`，加上 G1 DMA 回绕，bootstrap 拷贝长度写死 130660。从烧录卡菜单直接启动、SD 根目录没有占位 `rom.gba` 时，v1 停在 GBR3 logo，停机码 12（`X1_NO_LAUNCH_FILE`）。
+
+[rom_gba_optional/](rom_gba_optional/README.md) 记录一次只改 `loadGbaCart` 的试验：没有该文件时，把 `gFile.obj.fs` 指到已经挂载的 `gFatFs`，并跳过 sd2M / sd4M 两次诊断读取。卡带不匹配仍以停机码 15 停下，且在打开任何 SD 存档之前。没有新增 SD 写入。
+
+只在 melonDS 里看过：无 `rom.gba` 时试验版能进到训练家卡片，画面与 v1 基线逐像素相同；放回 `rom.gba` 时与 v1 相同。SD 写入和卡带存档都没有变化。尚未在真机上测试。bootstrap 仍只拷 130660 B；试验核心 130888 B，有 228 B 未拷贝（v1 已有 172 B）。差异、截图和哈希见该目录的 README。
+
+试验 NDS：227840 B，SHA-256 `592e01ae2feaa708b660cee1cb499890224861794093c62387af3d5a37766699`。文件不在本仓库，需要时索取。slot2patch 方案的作者仍是卧看（Wokann）。这次不向 [Wokann/GBARunner3](https://github.com/Wokann/GBARunner3) 开合并请求。
+
+[SHA256.json](SHA256.json) 里的 `current/README.md` 仍是追加 G1 之后的哈希。本页这次又加了一节，新哈希在 `current/README.md_rom_gba_optional`。原有键没有改写。目录内文件哈希见 [rom_gba_optional/SHA256SUMS](rom_gba_optional/SHA256SUMS)。
 
 ## 限制与安全
 
