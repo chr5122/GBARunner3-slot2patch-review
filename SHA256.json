@@ -35,5 +35,11 @@
   "current/README.md": "6d361b0c783c7fcbc1595f715c426861efc4878932abe078321e3c560884334b",
   "current/BUILD_REVIEW.md": "e1474fb4dd91dd597a2a1779a52b31a38818b6b13490a68f180ca70835e10485",
   "current/FIELD_TESTS.md": "dbde7929209ece62b9f4bb77f37d21eb8eaca19ab13042945ee9edc8553c33bd",
-  "G1_append_note": "原有文件哈希保持不动。README.md、BUILD_REVIEW.md、FIELD_TESTS.md 只追加了 G1 段落，当前哈希见 current/ 键。G1_DMA_WRAP.nds 只记录哈希，文件不在本仓库。回退基线是 D2（D2_AUTO_PRE.nds）。"
+  "G1_append_note": "原有文件哈希保持不动。README.md、BUILD_REVIEW.md、FIELD_TESTS.md 只追加了 G1 段落，当前哈希见 current/ 键。G1_DMA_WRAP.nds 只记录哈希，文件不在本仓库。回退基线是 D2（D2_AUTO_PRE.nds）。",
+  "g1s_dma_wrap/G1S_DMA_WRAP.nds": "6c0420fda11c0668a558e89f2c56cecbddf5df26e8e066fcc91c50cdd9fbd154",
+  "g1s_dma_wrap/G1S_DMA_WRAP.nds.size_bytes": "211968",
+  "g1s_dma_wrap/g1s_vs_slot2save.diff": "97b02fb1a5445d4c54e8d04d181eb1aaa72c6ef3962d32e7c94e754f40025787",
+  "g1s_dma_wrap/SHA256SUMS": "faf253bf6cabdc077547720ffc4d192f5fa1980c2528445a9c5dfe804fb96694",
+  "current/README.md_g1s_dma_wrap": "54f665112fad2c471722c81af2e78af56b6a507cd9cf6109860281503286b2ce",
+  "g1s_dma_wrap_note": "原有键没有改写。current/README.md 仍是追加 G1 段落之后、材料表加 g1s_dma_wrap 一行之前的哈希；加这一行之后的本页哈希是 current/README.md_g1s_dma_wrap。G1S_DMA_WRAP.nds 只记录哈希，文件不在本仓库。g1s_dma_wrap/ 内已提交文件的哈希见该目录 SHA256SUMS（清单不含自身，自身哈希是上面的 g1s_dma_wrap/SHA256SUMS）。diff 只改名、不改内容，哈希与原 G1S_vs_slot2save_DmaTransfer.patch 相同。"
 }

@@ -33,6 +33,7 @@
 | [G1_AUDIO_POP_FIX.md](G1_AUDIO_POP_FIX.md) | D2 之后的 G1_DMA_WRAP：m4a 声音 DMA 回绕，以及推断边界 |
 | [30_G1_vs_D2_review.patch](30_G1_vs_D2_review.patch) | D2 → G1，只含 `DmaTransfer.c`；基准与上面两份 patch 不同 |
 | [MAP_DIFF_SUMMARY.md](MAP_DIFF_SUMMARY.md) | D2 与 G1 的 ARM9 链接 map 摘要 |
+| [g1s_dma_wrap/README.md](g1s_dma_wrap/README.md) | slot2save 上移植日常版 G1 的 m4a 声音 DMA 回绕；2026-10-30 NDSL save 模式实机已确认切场景咔声消失。NDS 未入库 |
 
 **两份 patch 是不同基准的替代视图，不要一起套用。** 两份均已在独立临时目录实际 apply 后逐字节核对。
 
@@ -58,6 +59,7 @@ D2 之后另有一次只改 ARM9 声音 DMA 的实验，针对宝可梦火红/�
 - 记录中的 G1 NDS：227840 B；SHA-256 `eefe98a0d2369d18a78e02450e56a50a45c79e20b8f4887e2d1adc1e4063502d`。文件不在本仓库。
 - 回退基线是 D2：227328 B；SHA-256 `7965f4b1a2381a7ad325b1c618cc3b3511fc1287489291243cc8e296ddf6f76b`。
 - 这两条追加在 [SHA256.json](SHA256.json) 末尾。该文件原有的文件哈希保持不动。本页、BUILD_REVIEW.md、FIELD_TESTS.md 因追加段落，当前内容与 JSON 里保留的旧哈希不一致；当前哈希写在 `current/` 键下。新增文件的哈希也在 JSON 末尾。
+- 材料表里指向 [g1s_dma_wrap/](g1s_dma_wrap/README.md) 的一行是后加的。加上这一行之后，本页哈希在 `current/README.md_g1s_dma_wrap`。上面的 `current/README.md` 仍是追加 G1 段落之后、加这一行之前的哈希。`G1S_DMA_WRAP.nds` 只记哈希，文件不在本仓库；diff 与目录内文件的哈希见该目录的 [SHA256SUMS](g1s_dma_wrap/SHA256SUMS)，并追加在 [SHA256.json](SHA256.json) 末尾。原有键没有改写。
 - VBlank 处理偏晚是推断出来的原因。
 - 只增不回绕的 `curSrc` 源自上游 Gericom 的代码。是否影响原版 GBARunner3 尚未测试。
 - 用户实机反馈：切场景没有爆音，长时间游玩正常，存档写回正版卡。范围见 [FIELD_TESTS.md](FIELD_TESTS.md)。
