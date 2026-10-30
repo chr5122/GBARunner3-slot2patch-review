@@ -4,6 +4,10 @@
 
 [save 项目入口](https://github.com/chr5122/GBARunner3-slot2patch-review/blob/main/docs/SAVE.md) · [统一验证状态](https://github.com/chr5122/GBARunner3-slot2patch-review/blob/main/docs/STATUS.md) · [版本与 SHA256](https://github.com/chr5122/GBARunner3-slot2patch-review/blob/main/docs/VERSIONS.md)
 
+## 实机测试（2026-10-30）
+
+B3（补丁模式）与 G1S+B3（save 模式）均在 NDSL 实机测试，运行稳定。绿宝石翻训练家卡明显变快（模拟中八地址配置首次翻卡 63→41 帧，与关 JIT 相当）。
+
 ## 父本与改动
 
 父本为 Wokann `cache-hicode/slot2save` @ `1f9b601395c96b0b62a7e0cffd9b7711ce6283bc` 加上 G1S m4a DMA 回绕。G1S 前置材料见 [PR #2](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/2)。
@@ -21,7 +25,7 @@
 
 SD 写入、存档变更为零；这组回放没有实际保存验证。详细记录见 [RESULT.md](RESULT.md)。
 
-G1S 的“咔”声消失反馈属于音频版 G1S，不自动继承为本 G1S+B3 构建的声音/硬件验收。后续有 B3 用户实机改善反馈，但当前尚未把它单独绑定到本 save 产物；以统一状态页为准。
+G1S 的“咔”声消失反馈属于音频版 G1S，不自动继承为本 G1S+B3 构建的声音验收。
 
 ## 产物与未测范围
 
@@ -31,4 +35,4 @@ G1S 的“咔”声消失反馈属于音频版 G1S，不自动继承为本 G1S+B
 
 NDS 不入库；[SHA256SUMS.txt](SHA256SUMS.txt) 和 build.json 按原构建记录保留。
 
-本产物的 NDSL 实机、存档往返、RTC、声音、火红/叶绿及其他游戏、完整动态 JIT、第二/三次翻卡，当前没有单独完整确认。不是上游已合入或正式发行的声明。
+已实机初步验证（仅绿宝石；火红叶绿未测）。测试前备份存档。存档往返、RTC、声音、其他游戏、完整动态 JIT、第二/三次翻卡，当前没有单独完整确认。不是上游已合入或正式发行的声明。

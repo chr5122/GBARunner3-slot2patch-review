@@ -4,6 +4,10 @@
 
 [patch 项目入口](https://github.com/chr5122/GBARunner3-slot2patch-review/blob/main/docs/PATCH.md) · [统一验证状态](https://github.com/chr5122/GBARunner3-slot2patch-review/blob/main/docs/STATUS.md) · [版本与 SHA256](https://github.com/chr5122/GBARunner3-slot2patch-review/blob/main/docs/VERSIONS.md)
 
+## 实机测试（2026-10-30）
+
+B3（补丁模式）与 G1S+B3（save 模式）均在 NDSL 实机测试，运行稳定。绿宝石翻训练家卡明显变快（模拟中八地址配置首次翻卡 63→41 帧，与关 JIT 相当）。
+
 ## 改动
 
 - 仅在 Thumb 预取异常路径处理缓存内的 `BX r0-r3`。
@@ -17,7 +21,7 @@
 
 固定绿宝石八地址配置下，三次翻卡模型帧为 R1 60/81/127 → B3 38/37/37；首次映射重建 24219 → 1376。模型、指令等价和独立复核记录见 [REPORT.md](REPORT.md)、[DESIGN.md](DESIGN.md)、[B3_INDEPENDENT_REVIEW.md](B3_INDEPENDENT_REVIEW.md)。
 
-构建时尚未实机，构建 JSON 保持历史状态。后续用户已经报告“实机验证完了，非常爽”；具体 patch/save 产物和模式仍待绑定，最新状态统一记录在上方状态页，不把这句反馈扩大为两版分别验收。
+构建 JSON 仍保留生成时的“未实机”历史状态。已实机初步验证（仅绿宝石；火红叶绿未测）。测试前备份存档。
 
 ## 产物
 
