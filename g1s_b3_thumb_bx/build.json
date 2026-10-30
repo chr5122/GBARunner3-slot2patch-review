@@ -1,0 +1,27 @@
+{
+ "candidate": "G1S_B3_TEST.nds",
+ "sha256": "74077023e82769f5a56fe8b091725d23042736d771b75df013d62aa196e30048",
+ "bytes": 211968,
+ "control": "G1S_CTRL_REPRO.nds",
+ "control_sha256": "6c0420fda11c0668a558e89f2c56cecbddf5df26e8e066fcc91c50cdd9fbd154",
+ "control_byte_identical_to": "G1S_DMA_WRAP.nds 6c0420fd...d154",
+ "parent_commit": "1f9b601395c96b0b62a7e0cffd9b7711ce6283bc",
+ "parent_branch": "Wokann/GBARunner3 cache-hicode/slot2save",
+ "libtwl": "e069645bed14a93e149e873e9273f04851e3a04e",
+ "changes_vs_G1S": "B3 SOURCE.patch only: PrefetchAbort.s bl hic_mapRomBlock->bl memu_mapOrCachedThumbBx; new CachedThumbBx.s",
+ "source_diff": "G1S_B3_vs_G1S.patch",
+ "source_diff_sha256": "f046ee107ad4428b98b3e102eb9cfa0d90f981d437b74d970991ffb89b0286be",
+ "toolchain": "devkitARM r64-2 gcc 14.1.0, libnds 1.8.3-1, ndstool 2.3.1; source /workspace/bpej_diag/env.sh; make -C code (serial)",
+ "banner": "G1S B3 TEST\\nslot2save+m4a+ThumbBX\\nExperimental (post.py)",
+ "itcm_end": {
+  "ctrl": "0x7f70",
+  "b3": "0x7f78"
+ },
+ "memu_mapOrCachedThumbBx": "0x0680d9dc (.text, via ITCM veneer 0x7f48)",
+ "ewram_bss_start": "0x02042000 unchanged",
+ "heap_start": "0x021fe000 unchanged",
+ "bios_bundled": false,
+ "hardware_tested": false,
+ "release_ready": false,
+ "uploaded": false
+}

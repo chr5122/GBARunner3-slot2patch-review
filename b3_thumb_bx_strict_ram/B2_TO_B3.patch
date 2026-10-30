@@ -1,0 +1,32 @@
+--- a/code/core/arm9/source/MemoryEmulator/CachedThumbBx.s
++++ b/code/core/arm9/source/MemoryEmulator/CachedThumbBx.s
+@@ -39,16 +39,20 @@
+     mov r3, r3, lsr #1       // register number * 4 in saved abort frame
+     ldr r2, [sp, r3]
+ 
+-    // Restrict the first experiment to normal GBA work RAM and ROM targets.
+-    // Native/Bios/VRAM/high-ROM targets keep the original execution path.
+-    // Never chain hicode BX shortcuts: leave a native guest execution point.
+-    cmp r2, #0x02000000
+-    blo 9f
+-    cmp r2, #0x04000000
++    // Only canonical GBA EWRAM, IWRAM and low 2MB ROM destinations.
++    // RAM mirrors and DS-private/linear-relocated addresses fall back.
++    // Keep a native execution point; never chain high-ROM BX shortcuts.
++    cmp r2, #0x08000000
++    blo 2f
++    cmp r2, #0x08200000
++    bhs 9f
++    b 1f
++2:
++    sub r3, r2, #0x02000000
++    cmp r3, #0x00040000
+     blo 1f
+-    cmp r2, #0x08000000
+-    blo 9f
+-    cmp r2, #0x08200000
++    sub r3, r2, #0x03000000
++    cmp r3, #0x00008000
+     bhs 9f
+ 1:
+     tst r2, #1

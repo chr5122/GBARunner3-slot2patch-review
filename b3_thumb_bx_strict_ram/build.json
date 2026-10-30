@@ -1,0 +1,12 @@
+{
+  "candidate": "B3_THUMB_BX_STRICT_RAM_TEST.nds",
+  "sha256": "f2d5f8bedf024a694b00ee3bcb1eaebdda2eb21644b20e06c063f5f499f5dbad",
+  "nds_bytes": 228352,
+  "core_bytes": 131536,
+  "functional_copy_bytes": 131308,
+  "copy_command": "0x80010076",
+  "unchanged_optional_diagnostic_tail_omitted": 228,
+  "arm7_rebuilt_together": true,
+  "hardware_tested": false,
+  "release_ready": false
+}
