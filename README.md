@@ -1,72 +1,49 @@
-# GBARunner3 slot2patch review — D2
+# GBARunner3 社区改进记录：patch / save
 
-供 **Wokann（卧看微尘）** 审阅的非官方缓存实验、源码差异和实测记录。这里不是完整的 GBARunner3 仓库，也不是正式发行版或已精简的合并请求。
+这里整理 CHONG 512 的 GBARunner3 Slot-2 实验、源码差异与验证记录，供 Wokann（卧看微尘）和其他贡献者审阅。
 
-感谢 Wokann 的 Slot-2/外挂补丁实现，以及 Gericom 和其他 GBARunner3 贡献者的基础工作。
+**来源：** GBARunner3 基础项目来自 [Gericom 与原项目贡献者](https://github.com/Gericom/GBARunner3)；Slot-2 存档、外挂补丁及相关分支基于 [Wokann/GBARunner3](https://github.com/Wokann/GBARunner3)。本仓库记录在这些工作之上的社区修改，不代表上游已经采纳。
 
-## 本次想交流的结果
+## 先选运行方式
 
-在一套 **DS Lite + iTouchDS + TWiLight Menu++** 上，用户确认关闭运行期日志和周期写盘心跳后，体感明显更流畅。
+| 方式 | 游戏程序与中文内容来自哪里 | Slot-2 卡带在本项目测试中的作用 | 入口 |
+|---|---|---|---|
+| **patch：slot2patch** | 正版卡原 ROM + SD 上的外挂补丁；修改块经 PRE 缓存读取 | 提供原版 ROM 和卡带存档 | [patch 项目](docs/PATCH.md) |
+| **save：slot2save** | SD 上完整的游戏 ROM，可使用汉化 ROM | 使用对应正版卡的存档 | [save 项目](docs/SAVE.md) |
 
-最终 D2 保留了启动阶段自动生成 `.pre`：
+两条线有各自的 NDS、父本和测试记录。**G1S 是 save 版；G1、R1、B3 是这里的 patch 版命名。** G1S+B3 是把 B3 思路移植到 save 的另一个产物。
 
-- 有有效缓存：直接只读使用。
-- 无有效缓存：排他创建 `.tmp`，写入、同步并关闭，逐块读回校验，必要时保留旧缓存为 `.bak`，再启用新缓存。
-- 进入游戏前关闭并封闭 SD 写入许可；游戏期间不写日志、不做写盘保活。
-- 正版卡存档路径未改，卡带仍可写。
+## 当前材料与进度
 
-用户已确认 **首次生成缓存、生成后继续游戏、关机再次启动，以及正版卡原生 GBA 存档互通** 成功。这些属于用户实机反馈，不是独立硬件复现或全平台兼容认证。
+| 模式 | 版本/改动 | 目前证据 | 在哪里看 |
+|---|---|---|---|
+| patch | D2：启动自动生成 PRE，运行期关闭日志/周期写盘 | 有用户实机、缓存生成及保存互通反馈 | [说明](docs/PATCH.md#d2-pre) |
+| patch | G1：m4a PCM 声音 DMA 回绕 | 有用户反馈切场景爆音消失 | [G1 原始记录](G1_AUDIO_POP_FIX.md) · [PR #1，已合并到本仓库](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/1) |
+| patch | R1：SD 读取结果传递、失败缓存禁止发布、嵌套缓冲保护 | 本地正式基线；电脑验证及用户实机成功反馈 | [R1 状态与材料边界](docs/PATCH.md#r1-read-guard) |
+| patch | B3：缓存内 Thumb BX 快捷处理，目标限标准 RAM/低 ROM | 电脑复核通过；后续实机反馈见状态页 | [PR #3](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/3) |
+| save | G1S：移植 m4a PCM DMA 回绕 | 有用户 NDSL 实机反馈，切场景“咔”声消失 | [PR #2](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/2) |
+| save | G1S+B3：在 G1S 上移植 BX 快捷处理 | 已有电脑模型结果；不继承另一产物的实机结论 | [PR #3](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/3) |
 
-**没有查明原白屏根因，也不建议由此直接删去其他设备可能需要的作者原有规避路径。** 希望先讨论是否值得引入显式可选的 boot-bake / read-only-runtime 模式。
+- [验证状态与结果](docs/STATUS.md)：区分模型、独立复核、用户实机和未测项目。
+- [版本与 SHA256](docs/VERSIONS.md)：准确区分 NDS、父本、补丁基准。
+- [作者审阅入口](docs/REVIEW.md)：按功能查看源码差异，避免叠错补丁。
+- [历史 D2/G1 首页](docs/HISTORY_D2_README.md)：原有详细记录完整保留。
 
-## 先看哪些材料
+## 最新模型结果
 
-| 材料 | 内容 |
-|---|---|
-| [FIELD_TESTS.md](FIELD_TESTS.md) | X1/D1/D2 实机反馈、诊断计数及尚未验证事项 |
-| [MERGE_NOTES.md](MERGE_NOTES.md) | 作者审核边界、诊断遗留和后续最小 PR 建议 |
-| [IMPLEMENTATION.md](IMPLEMENTATION.md) | 构建时实现、布局、栈、失败保护和检查说明 |
-| [10_D2_vs_D1_review.patch](10_D2_vs_D1_review.patch) | D1 → D2 的 7 文件小差异；**不能直接套到卧看原分支** |
-| [20_FULL_vs_f8ac25c_review.patch](20_FULL_vs_f8ac25c_review.patch) | 固定上游提交 → 实测 D2 的 15 文件完整源码差异，含诊断/布局遗留 |
-| [PATCH_VERIFICATION.json](PATCH_VERIFICATION.json) | 两份 patch 的基准、逐文件哈希、实际 apply 后比对结果 |
-| [BUILD_REVIEW.md](BUILD_REVIEW.md) | 源码差异复核与构建注意事项 |
-| [G1_AUDIO_POP_FIX.md](G1_AUDIO_POP_FIX.md) | D2 之后的 G1_DMA_WRAP：m4a 声音 DMA 回绕，以及推断边界 |
-| [30_G1_vs_D2_review.patch](30_G1_vs_D2_review.patch) | D2 → G1，只含 `DmaTransfer.c`；基准与上面两份 patch 不同 |
-| [MAP_DIFF_SUMMARY.md](MAP_DIFF_SUMMARY.md) | D2 与 G1 的 ARM9 链接 map 摘要 |
+| 模式与固定场景 | 对照 | 候选 | 指标 |
+|---|---|---|---|
+| patch，绿宝石八地址配置 | R1：60 / 81 / 127 | B3：38 / 37 / 37 | 三次训练家卡翻面模型帧数 |
+| save，绿宝石八地址配置 | G1S：63 | G1S+B3：41 | 首次训练家卡翻面模型帧数 |
 
-**两份 patch 是不同基准的替代视图，不要一起套用。** 两份均已在独立临时目录实际 apply 后逐字节核对。
+**这是两组分别匹配输入的电脑模型对照，不是 NDSL 实机 FPS，也不能横向比较两种模式的绝对速度。**
 
-`30_G1_vs_D2_review.patch` 是稍后的第三份差异，父本是实测 D2。它单独套在已经包含 D2 版 `DmaTransfer.c` 的树上。已用改前、改后全文核对：`git apply -p1` 之后与 G1 文件逐字节相同。本仓库 `source/` 没有 `DmaTransfer.c`，阅读副本仍是原先那些相对上游有改动的文件。
+## 仓库如何使用
 
-`source/` 仅包含相对上游新增/变更的源文件，便于网页阅读；不能单独编译它。点击 GitHub 的 **Code → Download ZIP** 可以一次下载全部审核材料。
+本仓库是审阅材料和部分源码阅读副本，**不是完整、可单独编译的源码 checkout**。目前没有在这里发布 NDS 安装包或正式 Release。
 
-## 固定版本
+PR #2、#3 的材料尚未合入 `main`，所以首页通过 PR 和固定提交链接提供入口。仅下载 `main` 的 ZIP 不会得到这些 PR 的全部文件。PR 合并到本材料仓库，也不等于 Wokann 或 Gericom 已合入其项目。
 
-- 上游：[Wokann/GBARunner3](https://github.com/Wokann/GBARunner3)，`cache-hicode/slot2patch`。
-- 提交：`f8ac25cc8c79ec5a4c624cbd94eeed9e2d1842c9`。
-- libtwl：`e069645bed14a93e149e873e9273f04851e3a04e`。
-- 实测 D2 NDS：227328 B；SHA-256 `7965f4b1a2381a7ad325b1c618cc3b3511fc1287489291243cc8e296ddf6f76b`。
-- 日期：2026-10-22（Asia/Shanghai）。
+原补丁、构建 JSON 和旧 SHA 清单按历史记录保留。新增导航文件的当前哈希单列在 [DOCS_SHA256.json](DOCS_SHA256.json)，维护规则见 [docs/MAINTENANCE.md](docs/MAINTENANCE.md)。
 
-没有发布 NDS 二进制、游戏 ROM、BIOS、游戏汉化补丁/PRE、存档、SDK、原始照片、访问令牌或私人联系方式。
-构建时文档的“未实机验证”属于历史状态；后续反馈单独记录于 FIELD_TESTS.md，没有篡改冻结的构建报告。
-
-## G1_DMA_WRAP（父本 D2）
-
-D2 之后另有一次只改 ARM9 声音 DMA 的实验，针对宝可梦火红/叶绿切场景、音乐淡出后的爆音。回绕只在 m4a 特征下打开：DMA1 与 DMA2 都在声音 FIFO 模式，且 DMA2 的 SAD 等于 DMA1 的 SAD 加 0x630。说明、波形和布局见 [G1_AUDIO_POP_FIX.md](G1_AUDIO_POP_FIX.md)，补丁是 [30_G1_vs_D2_review.patch](30_G1_vs_D2_review.patch)。
-
-- 记录中的 G1 NDS：227840 B；SHA-256 `eefe98a0d2369d18a78e02450e56a50a45c79e20b8f4887e2d1adc1e4063502d`。文件不在本仓库。
-- 回退基线是 D2：227328 B；SHA-256 `7965f4b1a2381a7ad325b1c618cc3b3511fc1287489291243cc8e296ddf6f76b`。
-- 这两条追加在 [SHA256.json](SHA256.json) 末尾。该文件原有的文件哈希保持不动。本页、BUILD_REVIEW.md、FIELD_TESTS.md 因追加段落，当前内容与 JSON 里保留的旧哈希不一致；当前哈希写在 `current/` 键下。新增文件的哈希也在 JSON 末尾。
-- VBlank 处理偏晚是推断出来的原因。
-- 只增不回绕的 `curSrc` 源自上游 Gericom 的代码。是否影响原版 GBARunner3 尚未测试。
-- 用户实机反馈：切场景没有爆音，长时间游玩正常，存档写回正版卡。范围见 [FIELD_TESTS.md](FIELD_TESTS.md)。
-
-## 限制与安全
-
-测试仅支持已记录设备和场景，未验证全部烧录卡、SD、游戏或卡带修订版；未提供 FPS/耗时或音频丢样量化。
-保留作者原 PRE 格式。已有缓存仍使用原元数据校验，新生成缓存才逐块完整读回。
-启动生成会真正写入 SD；两次 FAT rename **不是抗断电原子事务**，必须先备份，不能热插拔或在写入中关机。
-阶段门禁不是按路径鉴权的文件系统沙箱；SD 运行期只读也不等于正版卡存档写保护。
-
-源文件原有版权与许可证声明保留，见 [NOTICE.md](NOTICE.md)。本仓库未向 Wokann/Gericom 创建 PR，也不声称已获作者采纳。
+旧的诊断、布局、失败注入、音频及硬件范围说明仍可从原始文档查阅；运行期 SD 只读也不表示卡带存档被写保护。来源与原文件声明见 [NOTICE.md](NOTICE.md)。
