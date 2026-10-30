@@ -1,17 +1,34 @@
-# G1S + B3（Thumb BX 快捷路径）测试包 —— 请卧看审核
+# G1S+B3：Thumb BX 快捷处理（save）
 
-作者：碧蓝（代 CHONG 512 整理）。GBARunner3 及 slot2save 分支均为卧看（Wokann）的工作，此处仅为在其基础上的实验性改动，请卧看审核。
+整理：碧蓝（代 CHONG 512 整理）。基础 GBARunner3 来自 Gericom 和原项目贡献者；相关 `slot2save` 分支来自 Wokann（卧看微尘）。本目录为在这些工作之上的社区实验材料，供作者审阅。
 
-## 内容
-- 父本：卧看 GBARunner3 `cache-hicode/slot2save` @ 1f9b601 + G1S m4a DMA 回绕（见 `g1s_dma_wrap/`）。
-- 改动：与 B3 完全相同，仅 `PrefetchAbort.s` 一行（`bl hic_mapRomBlock` → `bl memu_mapOrCachedThumbBx`）+ 新增 `CachedThumbBx.s`。DMA 修复未动。
-- 控制包：逐字节复现 G1S_DMA_WRAP.nds（SHA 6c0420fd…d154）。
-- 候选包：G1S_B3_TEST.nds，SHA256 `74077023e82769f5a56fe8b091725d23042736d771b75df013d62aa196e30048`，211968 B（.nds 不入库，仅记哈希）。
+[save 项目入口](https://github.com/chr5122/GBARunner3-slot2patch-review/blob/main/docs/SAVE.md) · [统一验证状态](https://github.com/chr5122/GBARunner3-slot2patch-review/blob/main/docs/STATUS.md) · [版本与 SHA256](https://github.com/chr5122/GBARunner3-slot2patch-review/blob/main/docs/VERSIONS.md)
 
-## melonDS 模拟（绿宝石 BPEJ v1.13，save 模式，观测只读）
-首次翻训练家卡：8 地址 63 帧 → 41 帧；JIT 关均为 41 帧。SD 写入 0，存档变更 0。详见 `RESULT.md`。
+## 父本与改动
 
-## 未测
-NDSL 实机、存档实际读写、RTC、声音、火红/叶绿及其他游戏、完整动态 JIT、第二/三次翻卡。
+父本为 Wokann `cache-hicode/slot2save` @ `1f9b601395c96b0b62a7e0cffd9b7711ce6283bc` 加上 G1S m4a DMA 回绕。G1S 前置材料见 [PR #2](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/2)。
 
-不打包 BIOS，不改存档格式，不宣称 GBARunner3 已支持。
+控制包逐字节复现 G1S_DMA_WRAP.nds。新增 B3 Thumb BX 快捷处理：`PrefetchAbort.s` 一处调用及 `CachedThumbBx.s`，目标范围为标准 EWRAM、IWRAM、低 ROM。DMA 修复保持原样。源码差异见 [G1S_B3_vs_G1S.patch](G1S_B3_vs_G1S.patch)。
+
+## 已记录模型结果
+
+绿宝石 BPEJ v1.13、save 模式：
+
+| 首次翻卡 | G1S | G1S+B3 |
+|---|---:|---:|
+| 八地址配置 | 63 模型帧 | 41 模型帧 |
+| 关闭 JIT | 41 模型帧 | 41 模型帧 |
+
+SD 写入、存档变更为零；这组回放没有实际保存验证。详细记录见 [RESULT.md](RESULT.md)。
+
+G1S 的“咔”声消失反馈属于音频版 G1S，不自动继承为本 G1S+B3 构建的声音/硬件验收。后续有 B3 用户实机改善反馈，但当前尚未把它单独绑定到本 save 产物；以统一状态页为准。
+
+## 产物与未测范围
+
+候选 `G1S_B3_TEST.nds`，211968 字节，SHA256：
+
+`74077023e82769f5a56fe8b091725d23042736d771b75df013d62aa196e30048`
+
+NDS 不入库；[SHA256SUMS.txt](SHA256SUMS.txt) 和 build.json 按原构建记录保留。
+
+本产物的 NDSL 实机、存档往返、RTC、声音、火红/叶绿及其他游戏、完整动态 JIT、第二/三次翻卡，当前没有单独完整确认。不是上游已合入或正式发行的声明。
