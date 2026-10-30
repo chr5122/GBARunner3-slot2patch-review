@@ -20,9 +20,9 @@
 | patch | D2：启动自动生成 PRE，运行期关闭日志/周期写盘 | 有用户实机、缓存生成及保存互通反馈 | [说明](docs/PATCH.md#d2-pre) |
 | patch | G1：m4a PCM 声音 DMA 回绕 | 有用户反馈切场景爆音消失 | [G1 原始记录](G1_AUDIO_POP_FIX.md) · [PR #1，已合并到本仓库](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/1) |
 | patch | R1：SD 读取结果传递、失败缓存禁止发布、嵌套缓冲保护 | 本地正式基线；电脑验证及用户实机成功反馈 | [R1 状态与材料边界](docs/PATCH.md#r1-read-guard) |
-| patch | B3：缓存内 Thumb BX 快捷处理，目标限标准 RAM/低 ROM | 电脑复核通过；后续实机反馈见状态页 | [PR #3](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/3) |
+| patch | B3：缓存内 Thumb BX 快捷处理，目标限标准 RAM/低 ROM | 电脑复核通过；用户反馈两模式实机体验良好，分项验收见状态页 | [PR #3](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/3) |
 | save | G1S：移植 m4a PCM DMA 回绕 | 有用户 NDSL 实机反馈，切场景“咔”声消失 | [PR #2](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/2) |
-| save | G1S+B3：在 G1S 上移植 BX 快捷处理 | 已有电脑模型结果；不继承另一产物的实机结论 | [PR #3](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/3) |
+| save | G1S+B3：在 G1S 上移植 BX 快捷处理 | 已有电脑模型结果及用户两模式实机体验反馈；保存往返待分项补录 | [PR #3](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/3) |
 
 - [验证状态与结果](docs/STATUS.md)：区分模型、独立复核、用户实机和未测项目。
 - [版本与 SHA256](docs/VERSIONS.md)：准确区分 NDS、父本、补丁基准。
@@ -37,6 +37,12 @@
 | save，绿宝石八地址配置 | G1S：63 | G1S+B3：41 | 首次训练家卡翻面模型帧数 |
 
 **这是两组分别匹配输入的电脑模型对照，不是 NDSL 实机 FPS，也不能横向比较两种模式的绝对速度。**
+
+## 发布准备（2026-10-31）
+
+两份原始测试文件已核对哈希，并在本地分别固定候选包、升级教程、回退版和源码快照。二进制没有重新编译或设为默认。
+
+[发布准备与剩余验收](docs/RELEASE_PREPARATION.md)：当前没有上架 NDS 下载或创建正式 Release，保存/重启/原生 GBA 互通按候选分别记录。
 
 ## 仓库如何使用
 
