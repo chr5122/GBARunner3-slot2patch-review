@@ -34,20 +34,25 @@
 | 路径 | 内容 |
 |---|---|
 | `src/` | 源码、界面脚本、卧看 PatchTool 源码与 Windows 差分工具 `PatchToolForGbaR3.exe`、`_gba/configs/` |
-| `release/slot2patch工具_mac_arm64.zip` | Mac arm64 独立 `.app`（`slot2patch工具.app`），压缩包原样存放，未再解压 |
+| `release/slot2patch工具_mac_arm64.zip` | Mac arm64 独立 `.app`（`slot2patch工具.app`），压缩包原样存放 |
+| `release/slot2patch工具_windows_x64.zip` | Windows x64 免安装程序（`slot2patch工具.exe` 与 `_internal/`），由 GitHub Actions 在 `windows-latest` 上用 PyInstaller 打出 |
 | `merge3_*.png` | 上面三张界面截图 |
-| `SHA256SUMS.txt` | Mac 压缩包的 SHA256 |
+| `SHA256SUMS.txt` | 上面两个压缩包的 SHA256 |
 
-Mac 压缩包 SHA256（已核对，与 `SHA256SUMS.txt` 一致）：
+Mac 与 Windows 压缩包 SHA256（已核对，与 `SHA256SUMS.txt` 一致）：
 
 ```
 95a54c53d2dabd43c977eb11bbb4a323f3158e35486ffcc69f3f133d68792978  slot2patch工具_mac_arm64.zip
+d890c7dc319586b95c51d399474de68968dac551035f37b419ed40e4cc9febe6  slot2patch工具_windows_x64.zip
 ```
+
+Windows 压缩包大小：12,711,853 字节。
 
 ## 使用与限制
 
 - **Mac 版**内置 Python 3.12 和 Tk 9，不需要另行安装 Python。解压 ZIP 后打开 `slot2patch工具.app`。
-- **Windows 图形界面 exe 尚未构建。** `src/build_windows.bat` 只是打包脚本。源码可在安装 Python 3（含 Tcl/Tk）后用 `src/打开界面.bat` 启动；目录中的 `PatchToolForGbaR3.exe` 是差分工具本体。
-- **未经 Apple 公证。** 首次打开若被系统拦截，请在 Finder 中对 `slot2patch工具.app` 右键 → 打开。
-- **未经充分实机验证。** 扫描和修复结果请先自行在 GBARunner3 实机上确认。
+- **Windows 版**（x64）内置 Python 3.12.10 和 Tk 8.6，不需要另行安装 Python。解压 `release/slot2patch工具_windows_x64.zip` 后双击 `slot2patch工具.exe`。exe 必须和旁边的 `_internal` 文件夹放在一起。
+- **Windows 包未经代码签名。** 首次打开可能触发 SmartScreen（“Windows 已保护你的电脑”）。请点“更多信息”→“仍要运行”。
+- **未经 Apple 公证。** Mac 版首次打开若被系统拦截，请在 Finder 中对 `slot2patch工具.app` 右键 → 打开。
+- **未经充分实机验证。** Windows 包只在 GitHub 的 `windows-latest` 上做过启动冒烟：`--run-core --help` 与 `--run-lr --help` 退出码为 0；两者不带参数时退出码为 2，并提示缺少必填参数；直接启动能创建标题为「GBA slot2patch 打包工具」的窗口；包内能找到 `PatchToolForGbaR3.exe` 和 301 个配置。没有用 ROM 生成补丁，也没有在 GBARunner3 实机上验证扫描或修复。
 - **不提供 ROM、BIOS、NDS**，也不含完整 GBR3 教程。游戏 ROM 请自备。公开完整实机教程前请先征得卧看同意。
