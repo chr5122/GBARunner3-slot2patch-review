@@ -93,7 +93,7 @@ if ($coreHelp.Code -ne 0 -or $coreHelp.Out -notmatch "--orig") { Note "FAIL --ru
 if ($lrHelp.Code -ne 0 -or $lrHelp.Out -notmatch "--rom") { Note "FAIL --run-lr --help"; $ok = $false }
 if ($coreEmpty.Code -eq 0) { Note "FAIL --run-core with no args should not succeed"; $ok = $false }
 if ($lrEmpty.Code -eq 0) { Note "FAIL --run-lr with no args should not succeed"; $ok = $false }
-if ($bundle.Code -ne 0 -or $bundle.Out -notmatch "tool_exists=True" -or $bundle.Out -notmatch "tk=") {
+if ($bundle.Code -ne 0 -or $bundle.Out -notmatch "tool_exists=True" -or $bundle.Out -notmatch "config_json=") {
     Note "FAIL --bundle-check"
     $ok = $false
 }
