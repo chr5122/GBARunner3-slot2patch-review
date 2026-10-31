@@ -1,0 +1,1 @@
+95a54c53d2dabd43c977eb11bbb4a323f3158e35486ffcc69f3f133d68792978  slot2patch工具_mac_arm64.zip
