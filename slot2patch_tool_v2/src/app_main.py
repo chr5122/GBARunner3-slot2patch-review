@@ -5,23 +5,27 @@ import sys, os
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 
 def _bundle_check():
-    """冻结包自检：PatchTool 和 configs 是否按脚本目录可见。不读 ROM，不初始化 Tk。"""
-    import lr_scan
-    import slot2patch_core
-    base = slot2patch_core.SCRIPT_DIR
-    tool = base / "PatchToolForGbaR3.exe"
-    cfg = base / "_gba" / "configs"
-    n = len(list(cfg.glob("*.json"))) if cfg.is_dir() else 0
-    same = os.path.normcase(str(base)) == os.path.normcase(str(lr_scan.HERE))
-    print(f"python={sys.version.split()[0]}")
-    print(f"frozen={getattr(sys, 'frozen', False)}")
-    print(f"base={base}")
-    print(f"lr_here={lr_scan.HERE}")
-    print(f"same_dir={same}")
-    print(f"tool_exists={tool.is_file()}")
-    print(f"config_json={n}")
-    ok = tool.is_file() and n > 0 and same
-    return 0 if ok else 1
+    """冻结包自检：PatchTool 和 configs 是否落在各脚本用来找文件的目录。不读 ROM。"""
+    try:
+        import gui_lrscan
+        import gui_slot2patch
+        import slot2patch_core
+        base = slot2patch_core.SCRIPT_DIR
+        tool = base / "PatchToolForGbaR3.exe"
+        cfg = base / "_gba" / "configs"
+        n = len(list(cfg.glob("*.json"))) if cfg.is_dir() else 0
+        dirs = [base, gui_lrscan.HERE, gui_slot2patch.SCRIPT_DIR]
+        same = len({os.path.normcase(str(p)) for p in dirs}) == 1
+        print(f"python={sys.version.split()[0]}")
+        print(f"frozen={getattr(sys, 'frozen', False)}")
+        print(f"base={base}")
+        print(f"same_dir={same}")
+        print(f"tool_exists={tool.is_file()}")
+        print(f"config_json={n}")
+        return 0 if tool.is_file() and n > 0 and same else 1
+    except Exception as e:
+        print(f"bundle_check_error={type(e).__name__}: {e}")
+        return 1
 
 def _main():
     for st in (sys.stdout, sys.stderr):
