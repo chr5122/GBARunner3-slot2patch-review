@@ -12,6 +12,7 @@
 - 有高风险或中风险：弹出列表窗口，列出风险、地址和说明。可选择 **修复**、**不修复（直接生成）** 或 **取消**。
 - 选择修复后，再生成 slot2patch ZIP。
 - 可选同时导出 BPS 和报告（含修复后 ROM，仅本地自测；请分发 BPS / ZIP）。
+- 生成的 ZIP 默认不再带 `_gba/configs`。只有显式给出 `--configs` 时才会加进去。
 
 更细的操作、命令行和已知限制见 [src/使用说明.md](src/使用说明.md)，打包参数见 [src/README.md](src/README.md)。
 
@@ -42,7 +43,7 @@
 Mac 与 Windows 压缩包 SHA256（已核对，与 `SHA256SUMS.txt` 一致）：
 
 ```
-95a54c53d2dabd43c977eb11bbb4a323f3158e35486ffcc69f3f133d68792978  slot2patch工具_mac_arm64.zip
+5b9aea3782bdda524a3b0073032a1357d99a294e00c87172d2466550a67cdea0  slot2patch工具_mac_arm64.zip
 d890c7dc319586b95c51d399474de68968dac551035f37b419ed40e4cc9febe6  slot2patch工具_windows_x64.zip
 ```
 

@@ -1185,7 +1185,7 @@ def main(argv=None):
     ap.add_argument("--name", default="")
     ap.add_argument("--force-orig", action="store_true")
     ap.add_argument("--skip-verify", action="store_true")
-    ap.add_argument("--configs", default="", help="GBR3 的 _gba/configs 目录；给了就整个打进 ZIP（默认自动找本目录/_gba/configs 或 configs）")
+    ap.add_argument("--configs", default="", help="可选：GBR3 的 _gba/configs 目录；仅显式给出时才打进 ZIP（默认不带 configs）")
     a = ap.parse_args(argv)
     rom = Path(a.rom)
     orig = Path(a.orig) if a.orig else None
@@ -1227,7 +1227,8 @@ def main(argv=None):
         except core.Die as e:
             print(f"错误: {e}", file=sys.stderr)
             return 1
-        add_configs(Path(zp), a.configs)
+        if a.configs:
+            add_configs(Path(zp), a.configs)
     return 0 if not failed else 2
 
 
