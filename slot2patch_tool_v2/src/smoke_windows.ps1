@@ -66,8 +66,14 @@ function Invoke-Frozen([string[]]$ArgList, [string]$Tag) {
     $out = Join-Path $env:TEMP "$Tag.out.txt"
     $err = Join-Path $env:TEMP "$Tag.err.txt"
     Remove-Item -LiteralPath $out, $err -ErrorAction SilentlyContinue
-    $p = Start-Process -FilePath $exe.FullName -ArgumentList $ArgList -Wait -PassThru `
+    $p = Start-Process -FilePath $exe.FullName -ArgumentList $ArgList -PassThru `
         -RedirectStandardOutput $out -RedirectStandardError $err
+    if (-not $p.WaitForExit(20000)) {
+        Note "TIMEOUT $Tag pid=$($p.Id) args=$($ArgList -join ' ')"
+        & taskkill.exe /F /T /PID $p.Id | Out-Null
+        return @{ Code = 124; Out = "timeout" }
+    }
+    [void]$p.WaitForExit()
     $stdout = if (Test-Path -LiteralPath $out) { Get-Content -LiteralPath $out -Raw -Encoding utf8 } else { "" }
     $stderr = if (Test-Path -LiteralPath $err) { Get-Content -LiteralPath $err -Raw -Encoding utf8 } else { "" }
     Note "---- $Tag exit=$($p.ExitCode) args=$($ArgList -join ' ')"
@@ -103,16 +109,19 @@ public static class WinEnum {
   public static List<string> Found = new List<string>();
   [DllImport("user32.dll")] public static extern bool EnumWindows(EnumProc lpEnumFunc, IntPtr lParam);
   [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint pid);
-  [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
   [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr hWnd);
+  [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+  public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, IntPtr wParam, StringBuilder lParam, uint flags, uint timeout, out IntPtr result);
   public static bool Callback(IntPtr hWnd, IntPtr lParam) {
     uint pid;
     GetWindowThreadProcessId(hWnd, out pid);
-    if (!Want.Contains(pid) || !IsWindowVisible(hWnd)) return true;
+    if (!Want.Contains(pid)) return true;
     var sb = new StringBuilder(512);
-    GetWindowText(hWnd, sb, sb.Capacity);
+    IntPtr result;
+    SendMessageTimeout(hWnd, 0x000D, (IntPtr)sb.Capacity, sb, 0x0002, 200, out result);
     var title = sb.ToString();
-    if (title.Length > 0) Found.Add(title);
+    var vis = IsWindowVisible(hWnd) ? "visible" : "hidden";
+    Found.Add(title.Length > 0 ? vis + ":" + title : vis + ":(no title)");
     return true;
   }
 }
@@ -123,7 +132,7 @@ Note "gui_pid=$($gp.Id)"
 $found = $false
 $titles = @()
 $deadline = (Get-Date).AddSeconds(45)
-$cb = [WinEnum+EnumProc]{ param($hWnd, $lParam) return [WinEnum]::Callback($hWnd, $lParam) }
+$cb = [System.Delegate]::CreateDelegate([WinEnum+EnumProc], [WinEnum].GetMethod("Callback"))
 while ((Get-Date) -lt $deadline) {
     Start-Sleep -Seconds 1
     if ($gp.HasExited) {
@@ -138,7 +147,7 @@ while ((Get-Date) -lt $deadline) {
     }
     [void][WinEnum]::EnumWindows($cb, [IntPtr]::Zero)
     $titles = @([WinEnum]::Found)
-    if ($titles | Where-Object { $_ -match "slot2patch" }) { $found = $true; break }
+    if ($titles | Where-Object { $_ -match "^visible:.*slot2patch" }) { $found = $true; break }
 }
 Note "gui_windows=$($titles -join ' | ')"
 if (-not $gp.HasExited) {
