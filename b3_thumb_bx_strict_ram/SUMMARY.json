@@ -1,0 +1,36 @@
+{
+  "status": "computer_verified_candidate_for_hardware_test",
+  "baseline": "R1 unchanged",
+  "b2_unchanged": true,
+  "candidate_sha256": "f2d5f8bedf024a694b00ee3bcb1eaebdda2eb21644b20e06c063f5f499f5dbad",
+  "candidate_bytes": 228352,
+  "b2_model_frames": [
+    39,
+    37,
+    37
+  ],
+  "r1_model_frames": [
+    60,
+    81,
+    127
+  ],
+  "b3_model_frames": [
+    38,
+    37,
+    37
+  ],
+  "b3_mapNewBlock": [
+    1376,
+    1438,
+    1471
+  ],
+  "unit_native_equivalence": 1388,
+  "unit_fallback": 770,
+  "images_unchanged": 9,
+  "observer_state_identity": 14,
+  "hardware_tested": false,
+  "release_ready": false,
+  "uploaded": false,
+  "github_published": false,
+  "default_changed": false
+}

@@ -1,0 +1,52 @@
+{
+  "project": "GBARunner3 slot2patch",
+  "baseline": "R1 SD read guard",
+  "status": "current_user_designated_baseline",
+  "designation_date": "2026-10-29",
+  "recorded_at": "2026-10-29T23:40:42.447560+08:00",
+  "authorization": "定为新基线吧",
+  "artifact": "/Users/chong/Documents/Codex/2026-08-20/git-status/gbr3_read_guard_r1_20261029/output/GBARunner3_R1_SD_READ_GUARD.nds",
+  "sha256": "46eda7a79321bb24213b8d39f4e77079e84bb0cc3436cc5964749aaeb134d808",
+  "bytes": 228352,
+  "delivered_test_filename": "R1_SD_READ_GUARD_TEST.nds",
+  "binary_changed_on_promotion": false,
+  "source": "/Users/chong/Documents/Codex/2026-08-20/git-status/gbr3_read_guard_r1_20261029/source",
+  "builder": "/Users/chong/Documents/Codex/2026-08-20/git-status/gbr3_read_guard_r1_20261029/build.py",
+  "independent_verifier": "/Users/chong/Documents/Codex/2026-08-20/git-status/gbr3_read_guard_r1_20261029/verify.py",
+  "computer_validation": {
+    "passed": true,
+    "evidence": "/Users/chong/Documents/Codex/2026-08-20/git-status/gbr3_read_guard_r1_20261029/validation/verification.json"
+  },
+  "field_test": {
+    "reported_by_user": true,
+    "reported_result": "成功了",
+    "directly_operated_by_agent": false,
+    "reported_environment_context": "DS Lite + iTouchDS + TWiLight Menu++ + slot2patch",
+    "exact_game_duration_and_save_roundtrip": "not_separately_confirmed",
+    "physical_read_failure_injection": false
+  },
+  "previous_binary": "/Users/chong/Documents/Codex/2026-08-20/git-status/gbr3_read_guard_r1_20261029/inputs/R0_UPLOADED_ROMOPT.nds",
+  "previous_sha256": "592e01ae2feaa708b660cee1cb499890224861794093c62387af3d5a37766699",
+  "previous_source_reference": "/Users/chong/Documents/Codex/2026-08-20/git-status/gbr3_perf_screen_20261021/g1_source",
+  "scope": [
+    "read-result propagation",
+    "failed-cache publication guard",
+    "nested temporary-buffer ownership"
+  ],
+  "preserved": [
+    "G1 audio DMA-wrap fix",
+    "D2 automatic PRE creation and runtime SD read-only policy",
+    "optional placeholder ROM",
+    "original Slot-2 save logic",
+    "legacy 228-byte diagnostic omission"
+  ],
+  "limits": [
+    "driver that never returns is not recovered",
+    "silent bad data reported as success is not detected",
+    "no new hardware error-injection proof",
+    "game save/reboot results not individually stated in R1 feedback"
+  ],
+  "next_changes_must_start_from_this_source": true,
+  "public_release_or_github_push_authorized": false,
+  "source_manifest": "/Users/chong/Documents/Codex/2026-08-20/git-status/gbr3_read_guard_r1_20261029/validation/baseline_source_manifest.json"
+}
