@@ -1,0 +1,10 @@
+# g1s_dma_wrap/ 里已提交的文件。在本目录执行：
+#   sha256sum -c SHA256SUMS
+# 本文件自身不在上面的清单里，哈希记在仓库根 SHA256.json。
+# NDS 未提交，按 G1 惯例只记哈希：
+# 6c0420fda11c0668a558e89f2c56cecbddf5df26e8e066fcc91c50cdd9fbd154  G1S_DMA_WRAP.nds
+# 211968 字节
+# diff 原文件名 G1S_vs_slot2save_DmaTransfer.patch，只改名，内容与哈希不变。
+252c122fd7a86f75e3f2e4d25d7c878fb983fa1f9908120b25dbac86c3004ad3  BUILD_INFO.json
+a02bf6ddab41ffbe2e3fa5cca9c571f17b34b3a3db630f0f6ccccd8aaf0e1f4d  README.md
+97b02fb1a5445d4c54e8d04d181eb1aaa72c6ef3962d32e7c94e754f40025787  g1s_vs_slot2save.diff
