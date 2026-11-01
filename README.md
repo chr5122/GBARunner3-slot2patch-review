@@ -19,6 +19,7 @@
 |---|---|---|---|
 | patch | D2：启动自动生成 PRE，运行期关闭日志/周期写盘 | 有用户实机、缓存生成及保存互通反馈 | [说明](docs/PATCH.md#d2-pre) |
 | patch | G1：m4a PCM 声音 DMA 回绕 | 有用户反馈切场景爆音消失 | [G1 原始记录](G1_AUDIO_POP_FIX.md) · [PR #1，已合并到本仓库](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/1) |
+| patch | 占位 ROM 可选（romopt，2026-10-28）：从菜单直接启动时 SD 根目录不再需要占位 `rom.gba` | 仅 melonDS 模拟器对照；单独实机反馈未记录。此行为由 R1、B3 继承，见状态页 | [说明](docs/PATCH.md#rom-optional) · [试验材料](rom_gba_optional/README.md) |
 | patch | R1：SD 读取结果传递、失败缓存禁止发布、嵌套缓冲保护 | 本地正式基线；电脑验证及用户实机成功反馈 | [R1 状态与材料边界](docs/PATCH.md#r1-read-guard) |
 | patch | B3：缓存内 Thumb BX 快捷处理，目标限标准 RAM/低 ROM | 电脑复核通过；用户反馈两模式实机体验良好，分项验收见状态页 | [PR #3](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/3) |
 | save | G1S：移植 m4a PCM DMA 回绕 | 有用户 NDSL 实机反馈，切场景“咔”声消失 | [PR #2](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/2) |

@@ -8,7 +8,8 @@
 |---|---|---|---:|---|
 | patch | D2_AUTO_PRE.nds | slot2patch 固定上游及 D1 实验之后 | 227328 | `7965f4b1a2381a7ad325b1c618cc3b3511fc1287489291243cc8e296ddf6f76b` |
 | patch | G1_DMA_WRAP.nds | D2 + m4a DMA 回绕 | 227840 | `eefe98a0d2369d18a78e02450e56a50a45c79e20b8f4887e2d1adc1e4063502d` |
-| patch | GBARunner3_R1_SD_READ_GUARD.nds | 继承 D2/G1 及中间启动改动；新增读取失败保护 | 228352 | `46eda7a79321bb24213b8d39f4e77079e84bb0cc3436cc5964749aaeb134d808` |
+| patch | GBARunner3_slot2patch_v1_romopt_trial.nds | G1 + 占位 ROM 可选（只改 `loadGbaCart`）；R1 记录中的前一二进制 `R0_UPLOADED_ROMOPT.nds` 与之同哈希 | 227840 | `592e01ae2feaa708b660cee1cb499890224861794093c62387af3d5a37766699` |
+| patch | GBARunner3_R1_SD_READ_GUARD.nds | romopt 试验版 + 读取失败保护（继承 D2/G1 与占位 ROM 可选） | 228352 | `46eda7a79321bb24213b8d39f4e77079e84bb0cc3436cc5964749aaeb134d808` |
 | patch | B3_THUMB_BX_STRICT_RAM_TEST.nds | R1 + B3 | 228352 | `f2d5f8bedf024a694b00ee3bcb1eaebdda2eb21644b20e06c063f5f499f5dbad` |
 | save | G1S_DMA_WRAP.nds | slot2save 固定上游 + 音频回绕 | 211968 | `6c0420fda11c0668a558e89f2c56cecbddf5df26e8e066fcc91c50cdd9fbd154` |
 | save | G1S_B3_TEST.nds | G1S + B3 移植 | 211968 | `74077023e82769f5a56fe8b091725d23042736d771b75df013d62aa196e30048` |
@@ -20,6 +21,7 @@
 - `10_D2_vs_D1_review.patch`：D1 → D2。
 - `20_FULL_vs_f8ac25c_review.patch`：固定 patch 上游 → D2；与 10_ 是不同父本的替代视图。
 - `30_G1_vs_D2_review.patch`：D2 → G1。
+- `rom_gba_optional/trial_vs_v1.diff`：G1 → 占位 ROM 可选试验版。
 - PR #2 的 `g1s_vs_slot2save.diff`：固定 save 上游 → G1S。
 - PR #3 的 `b3_thumb_bx_strict_ram/SOURCE.patch`：R1 → patch B3。
 - PR #3 的 `g1s_b3_thumb_bx/G1S_B3_vs_G1S.patch`：G1S → save G1S+B3。
