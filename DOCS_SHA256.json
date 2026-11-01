@@ -1,8 +1,8 @@
 {
-  "date": "2026-11-01",
-  "scope": "living navigation docs, tools/version-history entries and byte-exact historical README archive; excludes this manifest itself",
+  "date": "2026-11-02",
+  "scope": "living navigation docs including upstream PR index; excludes this manifest itself",
   "sha256": {
-    "README.md": "9ab089211e101071e6cd86b9ad9f38b564fd64a7775584a2f798fe559ca9643e",
+    "README.md": "2c85e2455c136580a11fd5bdfa990b94b51527ad636e3c93506a0403c3c48dc7",
     "docs/PATCH.md": "5e2fa8b572f36959dbc43cef936e172a500b229384b9e5ccb50343478d48e931",
     "docs/SAVE.md": "ffd1bf87381c80518d66fd3d106fefb6114e439633b806da238f83c59d014692",
     "docs/STATUS.md": "fdede6170fbe907dde0d35ccbc2c9aeceb6aad00a8c9bb2c299a4cf2b5c3128b",
@@ -13,6 +13,7 @@
     "docs/HISTORY_D2_README.md": "898fc1b733be3f5f1c498590649a86df9f8e40f04bf1f355e32c148c84580679",
     "docs/archive/README_D2_G1.original.txt": "6d361b0c783c7fcbc1595f715c426861efc4878932abe078321e3c560884334b",
     "docs/TOOLS.md": "458f934b967e0142f250dd360290c8419077f9aee5e8bdc255cf86da9c5912cf",
-    "docs/VERSION_HISTORY.md": "c73d65d436b60d8540e4549be1364ee60dcb412583f79ede713484c003fdb726"
+    "docs/VERSION_HISTORY.md": "c73d65d436b60d8540e4549be1364ee60dcb412583f79ede713484c003fdb726",
+    "docs/UPSTREAM_PRS.md": "a4d3f9b10f3ef89b46f24e7d1f8570b0a475b91af077dd1fd31a21b560ef3b9d"
   }
 }
