@@ -35,5 +35,9 @@
   "current/README.md": "6d361b0c783c7fcbc1595f715c426861efc4878932abe078321e3c560884334b",
   "current/BUILD_REVIEW.md": "e1474fb4dd91dd597a2a1779a52b31a38818b6b13490a68f180ca70835e10485",
   "current/FIELD_TESTS.md": "dbde7929209ece62b9f4bb77f37d21eb8eaca19ab13042945ee9edc8553c33bd",
-  "G1_append_note": "原有文件哈希保持不动。README.md、BUILD_REVIEW.md、FIELD_TESTS.md 只追加了 G1 段落，当前哈希见 current/ 键。G1_DMA_WRAP.nds 只记录哈希，文件不在本仓库。回退基线是 D2（D2_AUTO_PRE.nds）。"
+  "G1_append_note": "原有文件哈希保持不动。README.md、BUILD_REVIEW.md、FIELD_TESTS.md 只追加了 G1 段落，当前哈希见 current/ 键。G1_DMA_WRAP.nds 只记录哈希，文件不在本仓库。回退基线是 D2（D2_AUTO_PRE.nds）。",
+  "rom_gba_optional/GBARunner3_slot2patch_v1_romopt_trial.nds": "592e01ae2feaa708b660cee1cb499890224861794093c62387af3d5a37766699",
+  "rom_gba_optional/GBARunner3_slot2patch_v1_romopt_trial.nds.size_bytes": "227840",
+  "rom_gba_optional/SHA256SUMS": "4d243bba11412524dd090782d1360d1faadfff382d9bf52b0480d6a24490df20",
+  "rom_gba_optional_note": "试验 NDS 只记录哈希，文件不在本仓库，需要时索取。rom_gba_optional/ 内其余文件的哈希见该目录 SHA256SUMS（清单不含自身）。该目录从未合并分支 cursor/rom-gba-optional-96bc（966066a）合入 main；分支上的旧首页段落未合入，现行说明见 docs/PATCH.md#rom-optional。原有键没有改写。"
 }
