@@ -1,0 +1,11 @@
+Trial: GBARunner3_slot2patch_v1_romopt_trial.nds   (227840 B)
+Control (untouched): /workspace/frlg23_slot2patch/GBARunner3_slot2patch_v1.nds  sha256 eefe98a0d2369d18a78e02450e56a50a45c79e20b8f4887e2d1adc1e4063502d
+Base: /workspace/bpej_diag/ctrl_v1repro (rebuilds byte-identical to v1 = g1_source + bootstrap copy literal 130660)
+Change (only one): trial_vs_v1.diff -- core/arm9/source/main.cpp loadGbaCart():
+  f_open(romPath) failure no longer x1Stop(X1_NO_LAUNCH_FILE=12); instead gFile.obj.fs=&gFatFs, and the 2 diagnostic SD reads (sd2M/sd4M) are skipped.
+  (optional_sd_rom_placeholder.diff was written against wk3, which lacks the x1Stop guard; same intent rebased onto v1 tree.)
+Not changed: save format, save logic, bootstrap copy literal (still 130660), ITCM/high ROM code, power/clock/firmware. No BIOS bundled.
+Note: core arm9 bin grows 130832 -> 130888 B; bootstrap still copies 130660 B (truncation 172 B -> 228 B, same pre-existing v1 issue).
+Toolchain: devkitARM r64-2 (gcc 14.1.0), libnds 1.8.3-1, ndstool 2.3.1; source /workspace/bpej_diag/env.sh; make -C src/trial/code (serial)
+Banner: post.py, title 'rom.gba optional TRIAL\nG1 DMA WRAP base v1\nNot for release'
+Sim: /workspace/mds_sim/sim/runner_sim_romopt (variant of runner_sim.cpp: SIM_NO_ROMGBA=1 omits 0:/rom.gba; SIM_COPYLEN sets in-memory copy length), cfg_off.json, BPEJ cart in emulated Slot-2 + flash128k save, cn113 patch/pre.
