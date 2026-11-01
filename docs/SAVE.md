@@ -12,7 +12,7 @@
 
 把 patch 线上 G1 的 m4a PCM DMA 回绕移植到 slot2save，源码差异仅 `DmaTransfer.c`。控制条件和声音修复详见原材料。
 
-用户实机记录：NDSL、save 模式，切场景“咔”声消失。没有把这条反馈扩充为所有音频、保存往返或所有游戏都已测试。
+用户实机记录：NDSL、save 模式，切场景“咔”声消失。没有把这条反馈扩充为所有音频、保存往返或所有游戏都已测试。2026-11-01 用户实机确认正常（火红、绿宝石）。证据等级是用户反馈，不写成全面兼容。其他烧录卡/游戏、实机 FPS、故障注入，以及保存往返，仍未据此确认。
 
 - [PR #2](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/2)
 - [中文 README](https://github.com/chr5122/GBARunner3-slot2patch-review/blob/d76e6b0fb3590af0f45541909fa961dba8e5524b/g1s_dma_wrap/README.md)
@@ -30,7 +30,7 @@
 | G1S 控制包 | 63 帧 | 41 帧 |
 | G1S+B3 | 41 帧 | 41 帧 |
 
-模型中 SD 写入和存档变更为零；因此这里没有保存功能验收。第二/三次翻卡、完整动态 JIT、RTC、声音和其他游戏的范围，以各自产物记录为准。最新用户实机状态见 [统一状态页](STATUS.md)。
+模型中 SD 写入和存档变更为零；因此这里没有保存功能验收。第二/三次翻卡、完整动态 JIT、RTC、声音和其他游戏的范围，以各自产物记录为准。最新用户实机状态见 [统一状态页](STATUS.md)。2026-11-01 用户实机确认正常（火红、绿宝石）。证据等级是用户反馈。上述分项，以及其他烧录卡、实机 FPS、故障注入，仍未覆盖。
 
 - [PR #3](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/3)
 - [G1S+B3 中文 README](https://github.com/chr5122/GBARunner3-slot2patch-review/blob/54dfec0f5b0c650e72c0383f486a97a1389f8827/g1s_b3_thumb_bx/README.md)
@@ -41,4 +41,4 @@
 
 PR #2、#3 当前均未合入 main；以上固定提交链接可直接阅读材料。这里没有提供 NDS 下载，构建产物通过 [版本表](VERSIONS.md) 的完整 SHA256 区分。
 
-G1S 的实机成功不自动证明 G1S+B3 已实机成功；同样，patch B3 的翻卡数值不能写成 save 的实测值。
+G1S 的实机成功不自动证明 G1S+B3 已实机成功；同样，patch B3 的翻卡数值不能写成 save 的实测值。2026-11-01 的确认按两份产物分别记下，模型帧数仍然不是实机 FPS。
