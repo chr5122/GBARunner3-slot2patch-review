@@ -1,0 +1,71 @@
+name: slot2patch Windows x64
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/slot2patch-windows.yml"
+      - "slot2patch_tool_v2/src/**"
+      - "slot2patch_tool_v2/.gitignore"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: slot2patch-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 确认 Tk 8.6 以上
+        run: |
+          python -c "import tkinter,sys; v=float(tkinter.TkVersion); assert v>=8.6, v; print('python', sys.version); print('tk', v)"
+
+      - name: 安装 PyInstaller
+        run: python -m pip install --upgrade pyinstaller
+
+      - name: 打包免安装 exe
+        working-directory: slot2patch_tool_v2/src
+        env:
+          PYTHONUTF8: "1"
+        run: |
+          python -m PyInstaller --noconfirm --clean --windowed --noupx --name "slot2patch工具" `
+            --hidden-import lr_scan --hidden-import slot2patch_core --hidden-import gui_lrscan --hidden-import gui_slot2patch --hidden-import tkinter `
+            --add-binary "PatchToolForGbaR3.exe;." --add-data "_gba;_gba" --add-data "使用说明.md;." `
+            app_main.py
+
+      - name: 冒烟测试并打 zip
+        shell: pwsh
+        run: |
+          & ./slot2patch_tool_v2/src/smoke_windows.ps1 `
+            -SrcDir (Resolve-Path ./slot2patch_tool_v2/src) `
+            -ZipPath (Join-Path $env:RUNNER_TEMP "slot2patch-windows-x64.zip") `
+            -SummaryPath (Join-Path $env:RUNNER_TEMP "windows-smoke.txt")
+
+      - name: 上传冒烟记录
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-smoke
+          path: ${{ runner.temp }}/windows-smoke.txt
+          if-no-files-found: warn
+
+      - name: 上传 Windows zip
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: slot2patch-windows-x64
+          path: ${{ runner.temp }}/slot2patch-windows-x64.zip
+          if-no-files-found: error
