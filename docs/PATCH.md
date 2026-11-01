@@ -92,11 +92,11 @@ R1 NDS：`46eda7a79321bb24213b8d39f4e77079e84bb0cc3436cc5964749aaeb134d808`，22
 
 单位为模型帧数。首次映射重建由 24219 次降至 1376 次。指令测试、画面对照和独立复核已记录；最新用户实机反馈单列在 [状态页](STATUS.md)。
 
-审阅材料（PR #3，尚未合入 main）：
+审阅材料（PR #3 已合入本仓库 main）：
 - [PR 主页面](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/3)
-- [B3 中文 README](https://github.com/chr5122/GBARunner3-slot2patch-review/blob/54dfec0f5b0c650e72c0383f486a97a1389f8827/b3_thumb_bx_strict_ram/README.md)
-- [完整报告](https://github.com/chr5122/GBARunner3-slot2patch-review/blob/54dfec0f5b0c650e72c0383f486a97a1389f8827/b3_thumb_bx_strict_ram/REPORT.md)
-- [R1 → B3 源码差异](https://github.com/chr5122/GBARunner3-slot2patch-review/blob/54dfec0f5b0c650e72c0383f486a97a1389f8827/b3_thumb_bx_strict_ram/SOURCE.patch)
-- [B2 → B3 范围收紧差异](https://github.com/chr5122/GBARunner3-slot2patch-review/blob/54dfec0f5b0c650e72c0383f486a97a1389f8827/b3_thumb_bx_strict_ram/B2_TO_B3.patch)
+- [B3 中文 README](../b3_thumb_bx_strict_ram/README.md)
+- [完整报告](../b3_thumb_bx_strict_ram/REPORT.md)
+- [R1 → B3 源码差异](../b3_thumb_bx_strict_ram/SOURCE.patch)
+- [B2 → B3 范围收紧差异](../b3_thumb_bx_strict_ram/B2_TO_B3.patch)
 
-固定提交链接保留当时的证据；PR 页面显示后续更新。构建时写出的“未实机”是历史状态，后续反馈见统一状态页，不回写冻结的构建 JSON。
+当前目录提供已合入材料；固定历史提交见[版本沿革](VERSION_HISTORY.md)，PR 页面保留原讨论。构建时写出的“未实机”是历史状态，后续反馈见统一状态页，不回写冻结的构建 JSON。

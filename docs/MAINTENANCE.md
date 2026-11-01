@@ -1,23 +1,25 @@
 # 本次材料整理与维护约定
 
-日期：2026-10-30。
+初始约定：2026-10-30。当前材料合并状态见下文及[版本沿革](VERSION_HISTORY.md)。
 
 ## 结构
 
-- 根 README：patch/save 双入口。
+- 根 README：patch/save 双入口、工具与历史导航。
 - PATCH、SAVE：各自的模式、父本、功能与材料。
 - VERSIONS：准确区分二进制和补丁父本。
 - STATUS：后续模型/实机反馈，不回填构建时 JSON。
 - REVIEW：PR 和源码阅读入口。
+- TOOLS：电脑工具包、源码、配置与验证范围。
+- VERSION_HISTORY：各功能演进、固定提交和整合记录。
 - HISTORY_D2_README：整理前首页的可阅读存档；archive/README_D2_G1.original.txt 保留原始完整字节副本。
 
-旧目录、源码、补丁、构建 JSON 和历史报告保留原路径。PR #2、#3 在各自分支继续待审；没有为了材料整理合并它们。
+旧目录、源码、补丁、构建 JSON 和历史报告保留原路径。本轮按维护者决定，将 PR #2、#3、#5 合入 main；早期工具 PR #4 关闭去重，原分支和提交保留。整合前 main 另保留在 `archive/main-before-consolidation-20261101`。这取代了初始“#2/#3 继续待审、不合并”的仓库内部安排；上游作者审核状态不因此改变。
 
 ## 指纹规则
 
 根 `SHA256.json` 包含 D2/G1 的历史记录；其中 `current/` 指的是当时追加 G1 材料的快照，不再被解释为全部活文档的实时摘要。
 
-本次只新增 `DOCS_SHA256.json`，记录整理后 main 导航文档的当前 SHA256。该清单不包含自身，避免自引用。PR 分支自己的 README/清单另行核对。
+`DOCS_SHA256.json` 记录整理后 main 导航文档的当前 SHA256；本轮新增的工具入口和版本沿革一并纳入。该清单不包含自身，避免自引用。PR 分支自己的 README/清单另行核对。
 
 构建时 `hardware_tested:false`、`uploaded:false` 等字段按写出时的含义保留，不因为后续反馈而改写二进制证据。
 
