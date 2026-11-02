@@ -1,0 +1,19 @@
+{
+  "source_change": "code/core/arm9/source/Emulator/HBlankIrq.s",
+  "sr2_included": false,
+  "arm7_identical": true,
+  "linked_guard_test": {
+    "pass": true,
+    "engine": "linked coherent-sample ARM guard on melonDS ARM946 interpreter",
+    "cases": 10240,
+    "suppressed": 16,
+    "r0_r12_lr_preserved": true,
+    "memory_writes": 0,
+    "stack_growth": 0,
+    "limits": "guard only; replay and hardware validation separate"
+  },
+  "itcm_end": "0x7fb0",
+  "nds_sha256": "a4eb80c810ff7dd0b031ba8b3026f48ce2f687cea54459c7750f98cedcf0786a",
+  "hardware_tested": false,
+  "full_game_replay": false
+}

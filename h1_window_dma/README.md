@@ -42,7 +42,7 @@ H1 不检查地图编号。帧首过滤作用于共享 HBlank DMA 入口；复�
 
 `upstream-port/` 收录三文件差异、构建／独立核对结果、实际 helper C 宿主测试。完整可编译代码将通过上游 PR 的 fork 分支提供。此移植保留原 helper 与帧首过滤；额外将原 `dmaStartSound` 移至 EWRAM/noinline 腾出 ITCM，函数逻辑不变。没有捆绑声音回绕、B3、A2、SR2、R1、诊断或日志移除；保留上游日志行为，所以不等同于顺畅日常组合版。
 
-新移植 NDS：224,768 字节，SHA256：
+初次移植 NDS：224,768 字节，SHA256：
 
 `44ab8ffdecfb85080663c3d65453a5a5e9139dc094d7d007a83e9f7aa37bff77`
 
@@ -62,3 +62,7 @@ H1 不检查地图编号。帧首过滤作用于共享 HBlank DMA 入口；复�
 这里上传源码与文字证据，不包含游戏 ROM、BIOS、存档、PRE、汉化补丁或 NDS 二进制，未创建正式 Release。
 
 
+
+## 后续一致采样加固
+
+当前上游 PR #9 的 head 为 `adb4344d8d1535515fca7e2a044d279a8295a3de`，同样采用主线整合中发现的一致采样 guard，不含 SR2。完整独立构建通过，ARM7 不变，ITCM 末尾仍为 0x7FB0；guard 实际指令 10,240 例通过。新独立审阅 NDS SHA256 为 `a4eb80c810ff7dd0b031ba8b3026f48ce2f687cea54459c7750f98cedcf0786a`，仍未做该裸分支完整游戏或实机回归，保持 Draft。上文初次移植及原 H1 的历史指纹不改写；本次结果见 [guard-refinement](upstream-port/guard-refinement/)。

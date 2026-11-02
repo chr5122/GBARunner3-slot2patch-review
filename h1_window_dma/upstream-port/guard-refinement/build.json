@@ -1,0 +1,9 @@
+{
+  "sha256": "a4eb80c810ff7dd0b031ba8b3026f48ce2f687cea54459c7750f98cedcf0786a",
+  "bytes": 224768,
+  "core_copy_bytes": 127832,
+  "itcm_end": "0x7fb0",
+  "undefined_buffer": "0x20f8800",
+  "hardware_tested": false,
+  "baseline_changed": false
+}
