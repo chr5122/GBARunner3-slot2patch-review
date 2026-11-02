@@ -1,7 +1,7 @@
 {
   "scope": "H1 evidence and source excerpts; excludes this manifest",
   "sha256": {
-    "README.md": "908595ed0140bd02553852e14777027b36d5dadd7aac8c6f4b3a346f2c814d32",
+    "README.md": "2892db9c11f745eaf666e69c1929e0970397446a04e300f11ef67653b9dd2c1c",
     "tested-combination/hardware-feedback.json": "ca70d7e71d98e36951b37253b0c3b647fe59235bcba105fb3c661b2d5213d206",
     "tested-combination/SdCache.c": "bcc1d7e227a67fa61f9933b4ba18a32e8d13583c71f782e3864888c61e91dedb",
     "tested-combination/h1-vs-b3.diff": "74b043cb713443e750179deebfdbc66bc1672c8ab82e8766c85dc1b06e92fc04",
@@ -11,6 +11,7 @@
     "upstream-port/h1-vs-alignment.diff": "6ce04b23b0b4c006a6fd897dd582b682df262877bb5a51888e2b1cbc7be86730",
     "upstream-port/verification.json": "c02463b1429a5389d0fcf48230039629cf07a7ffb948c4f660453129a3f311c3",
     "upstream-port/test_helpers.py": "0da2521d5d58d4343267e2690617ef266fecf7f6e1fbad668ab4cb2f48fa8f46",
-    "upstream-port/build.json": "4a84bc26fb9c3d0a320ea40b98ed06467979606c0b12c3924476af616c69ad37"
+    "upstream-port/build.json": "4a84bc26fb9c3d0a320ea40b98ed06467979606c0b12c3924476af616c69ad37",
+    "SCOPE.md": "246ae8cd5ee0a7a5ca988b187641da985e69caf8d121df1dddc5353a1440d80a"
   }
 }

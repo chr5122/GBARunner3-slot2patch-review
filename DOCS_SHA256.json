@@ -2,7 +2,7 @@
   "date": "2026-11-02",
   "scope": "living navigation docs including upstream PR index and H1 entry; excludes this manifest itself",
   "sha256": {
-    "README.md": "7867e7d3a2b270fe1e7d16f8591c700dd25f42636218d2382890402a09e1822a",
+    "README.md": "b0a85e4c1132a7fa3cc89a5026e45b737729bdf97eedea0e3e4ba7ff559d2323",
     "docs/PATCH.md": "5e2fa8b572f36959dbc43cef936e172a500b229384b9e5ccb50343478d48e931",
     "docs/SAVE.md": "ffd1bf87381c80518d66fd3d106fefb6114e439633b806da238f83c59d014692",
     "docs/STATUS.md": "fdede6170fbe907dde0d35ccbc2c9aeceb6aad00a8c9bb2c299a4cf2b5c3128b",
@@ -14,6 +14,6 @@
     "docs/archive/README_D2_G1.original.txt": "6d361b0c783c7fcbc1595f715c426861efc4878932abe078321e3c560884334b",
     "docs/TOOLS.md": "458f934b967e0142f250dd360290c8419077f9aee5e8bdc255cf86da9c5912cf",
     "docs/VERSION_HISTORY.md": "c73d65d436b60d8540e4549be1364ee60dcb412583f79ede713484c003fdb726",
-    "docs/UPSTREAM_PRS.md": "6cc8d1ac42d32be4002d71a9c74507aad8edad4a454073f7ebc7ed5ef66ae565"
+    "docs/UPSTREAM_PRS.md": "ba298e606e0f0c90a53a40a7be812f912c11c04e6a7066b78fae5188412b53af"
   }
 }
