@@ -1,5 +1,7 @@
 # 本次材料整理与维护约定
 
+**2026-11-02 社区 PATCH 主线已整合 H1＋SR2**（含跨行状态一致采样加固）。[整合记录](../h1_sr2_mainline/README.md) · [完整源码](https://github.com/chr5122/GBARunner3/tree/65866604e5fd4e90c51eb32e6ea34bb251d075c4)。H1/SR2 分别有用户实机成功反馈；最终组合通过电脑回归，仍待实机复测。A2 未加入，save 线本轮未改。
+
 初始约定：2026-10-30。当前材料合并状态见下文及[版本沿革](VERSION_HISTORY.md)。
 
 ## 结构
@@ -35,3 +37,8 @@ GBARunner3 基础项目来自 Gericom 和原项目贡献者；Wokann 的相关�
 - R1 可公开复建的完整前置材料。
 - B3 其他游戏及完整动态 JIT 的回归记录。
 - 真正运行包、安装教程与正式发布流程需按对应版本单独整理；本仓库仍以审阅材料为主。
+
+
+## 当前代码入口
+
+材料主线为本仓库 main；可编译 PATCH 整合源码在 [chr5122/GBARunner3 的 community/slot2patch](https://github.com/chr5122/GBARunner3/tree/65866604e5fd4e90c51eb32e6ea34bb251d075c4)。该固定源码包含完整 R1 前置等继承代码，旧材料“尚缺完整 R1 前置”按历史含义保留；新构建使用固定源码，不要求机械叠加旧 diff。

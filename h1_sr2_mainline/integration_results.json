@@ -1,0 +1,142 @@
+{
+  "build": {
+    "name": "PATCH H1+SR2 (coherent scanline sample)",
+    "sha256": "1aa3ab06bd34c140c260bd833f3777714324ec1b50e24d8e0513628e16125199",
+    "bytes": 228864,
+    "parent_h1_sha256": "7e77a51d32f2e7d34ac865b462dec887eb8fb9c582cb2c116c3c28ae26de48f6",
+    "sr2_reference_sha256": "c4d6dc5b5efb4b967191a720dc76d1c78c070e148be13aea1416b88ccc17ff5b",
+    "itcm_end": "0x7ff0",
+    "core_bytes": 132064,
+    "legacy_tail_preserved_bytes": 228,
+    "source_changes_after_h1": [
+      "code/core/arm9/source/VirtualMachine/VMSwi.s",
+      "code/core/arm9/source/Emulator/HBlankIrq.s"
+    ],
+    "a2_included": false,
+    "combined_hardware_tested": false,
+    "individual_h1_and_sr2_hardware_feedback": "user reports both passed; combined binary and coherent-sample guard not yet hardware tested"
+  },
+  "independent_verification": {
+    "pass": true,
+    "source_changes_after_h1": [
+      "code/core/arm9/source/VirtualMachine/VMSwi.s",
+      "code/core/arm9/source/Emulator/HBlankIrq.s"
+    ],
+    "all_ram_data_symbol_addresses_identical_to_h1": true,
+    "relocated_code_symbols": 534,
+    "core_differing_bytes": 14711,
+    "nds_differing_bytes": 14751,
+    "nonexecuting_packaging_metadata_changed_ranges": [
+      "0x300..0x313",
+      "0xFEC..0xFFF"
+    ],
+    "core_changed_offset_count": 14711,
+    "arm7_identical": true,
+    "nds_header_0x000_0x200_identical": true,
+    "header_crc_valid": true,
+    "legacy_tail_preserved": true,
+    "exact_linked_decoder_matches_delivered_sr2": true,
+    "itcm_end": "0x7ff0",
+    "combined_nds_sha256": "1aa3ab06bd34c140c260bd833f3777714324ec1b50e24d8e0513628e16125199",
+    "combined_hardware_tested": false
+  },
+  "sr2_instruction_test": {
+    "pass": true,
+    "linked_arm_cases": 8192,
+    "r0_r12_lr_preserved": true,
+    "both_halfwords": true,
+    "all_initial_nzcv_flags": true,
+    "scope": "linked TST/MOVEQ/AND instructions; CP15 cache read covered separately by game replay"
+  },
+  "coherent_guard_instruction_test": {
+    "pass": true,
+    "engine": "linked coherent-sample ARM guard on melonDS ARM946 interpreter",
+    "cases": 10240,
+    "suppressed": 16,
+    "r0_r12_lr_preserved": true,
+    "memory_writes": 0,
+    "stack_growth": 0,
+    "limits": "guard only; replay and hardware validation separate"
+  },
+  "game_replays": {
+    "big": {
+      "inputs_unchanged": true,
+      "virtual_sd_write_attempts": 0,
+      "save_persist_requests": 0,
+      "virtual_flash_changed_bytes": 0,
+      "frames": 2845,
+      "frames_compared": 446,
+      "frames_byte_identical_to_h1": 446,
+      "source_tables_byte_identical_to_h1": true,
+      "dma0_calls_per_frame": 160,
+      "frames_with_outside_pixels": 0,
+      "cache_audit": {
+        "copies": 205,
+        "segmented_copies": 27,
+        "maintenance_dma": 86,
+        "errors": 0,
+        "cache_reentry": 0,
+        "unfinished_copy": false,
+        "minimum_observed_copy_sp": 4294960012
+      }
+    },
+    "small": {
+      "inputs_unchanged": true,
+      "virtual_sd_write_attempts": 0,
+      "save_persist_requests": 0,
+      "virtual_flash_changed_bytes": 0,
+      "frames": 2845,
+      "frames_compared": 446,
+      "frames_byte_identical_to_h1": 446,
+      "source_tables_byte_identical_to_h1": true,
+      "dma0_calls_per_frame": 160,
+      "frames_with_outside_pixels": 0,
+      "cache_audit": {
+        "copies": 205,
+        "segmented_copies": 27,
+        "maintenance_dma": 86,
+        "errors": 0,
+        "cache_reentry": 0,
+        "unfinished_copy": false,
+        "minimum_observed_copy_sp": 4294960012
+      }
+    },
+    "reset_combo": {
+      "inputs_unchanged": true,
+      "virtual_sd_write_attempts": 0,
+      "save_persist_requests": 0,
+      "virtual_flash_changed_bytes": 0,
+      "frames": 2592,
+      "softreset_trace": {
+        "reset_swi1": 2,
+        "reset_swi0": 1,
+        "reset_swi8d": 0,
+        "bios_softreset": 1,
+        "rom_entry_after_reset": 2
+      },
+      "final_arm9_pc": "0x22008ca"
+    }
+  },
+  "negative_reset_control": {
+    "inputs_unchanged": true,
+    "virtual_sd_write_attempts": 0,
+    "save_persist_requests": 0,
+    "virtual_flash_changed_bytes": 0,
+    "frames": 2592,
+    "softreset_trace": {
+      "reset_swi1": 0,
+      "reset_swi0": 0,
+      "reset_swi8d": 1,
+      "bios_softreset": 0,
+      "rom_entry_after_reset": 0
+    },
+    "final_arm9_pc": "0x4"
+  },
+  "individual_hardware_feedback": {
+    "h1": "H1验证了 没问题",
+    "sr2_and_authorization": "SR2验证成功 与h1一同并入主线"
+  },
+  "combined_hardware_tested": false,
+  "full_credits_replay": "NOT_RUN",
+  "a2_included": false
+}

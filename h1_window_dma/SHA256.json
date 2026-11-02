@@ -1,7 +1,7 @@
 {
   "scope": "H1 evidence and source excerpts; excludes this manifest",
   "sha256": {
-    "README.md": "2892db9c11f745eaf666e69c1929e0970397446a04e300f11ef67653b9dd2c1c",
+    "README.md": "3ad28c118d888b80770a7e08042e540aee19a627ea8095dd138552980e41a30b",
     "tested-combination/hardware-feedback.json": "ca70d7e71d98e36951b37253b0c3b647fe59235bcba105fb3c661b2d5213d206",
     "tested-combination/SdCache.c": "bcc1d7e227a67fa61f9933b4ba18a32e8d13583c71f782e3864888c61e91dedb",
     "tested-combination/h1-vs-b3.diff": "74b043cb713443e750179deebfdbc66bc1672c8ab82e8766c85dc1b06e92fc04",

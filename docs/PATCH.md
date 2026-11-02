@@ -1,5 +1,7 @@
 # patch 项目：slot2patch
 
+**2026-11-02 社区 PATCH 主线已整合 H1＋SR2**（含跨行状态一致采样加固）。[整合记录](../h1_sr2_mainline/README.md) · [完整源码](https://github.com/chr5122/GBARunner3/tree/65866604e5fd4e90c51eb32e6ea34bb251d075c4)。H1/SR2 分别有用户实机成功反馈；最终组合通过电脑回归，仍待实机复测。A2 未加入，save 线本轮未改。
+
 [返回首页](../README.md) · [save 项目](SAVE.md) · [验证状态](STATUS.md) · [版本哈希](VERSIONS.md)
 
 ## 运行方式
@@ -100,3 +102,4 @@ R1 NDS：`46eda7a79321bb24213b8d39f4e77079e84bb0cc3436cc5964749aaeb134d808`，22
 - [B2 → B3 范围收紧差异](../b3_thumb_bx_strict_ram/B2_TO_B3.patch)
 
 当前目录提供已合入材料；固定历史提交见[版本沿革](VERSION_HISTORY.md)，PR 页面保留原讨论。构建时写出的“未实机”是历史状态，后续反馈见统一状态页，不回写冻结的构建 JSON。
+

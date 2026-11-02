@@ -1,0 +1,24 @@
+{
+  "pass": true,
+  "source_changes_after_h1": [
+    "code/core/arm9/source/VirtualMachine/VMSwi.s",
+    "code/core/arm9/source/Emulator/HBlankIrq.s"
+  ],
+  "all_ram_data_symbol_addresses_identical_to_h1": true,
+  "relocated_code_symbols": 534,
+  "core_differing_bytes": 14711,
+  "nds_differing_bytes": 14751,
+  "nonexecuting_packaging_metadata_changed_ranges": [
+    "0x300..0x313",
+    "0xFEC..0xFFF"
+  ],
+  "core_changed_offset_count": 14711,
+  "arm7_identical": true,
+  "nds_header_0x000_0x200_identical": true,
+  "header_crc_valid": true,
+  "legacy_tail_preserved": true,
+  "exact_linked_decoder_matches_delivered_sr2": true,
+  "itcm_end": "0x7ff0",
+  "combined_nds_sha256": "1aa3ab06bd34c140c260bd833f3777714324ec1b50e24d8e0513628e16125199",
+  "combined_hardware_tested": false
+}

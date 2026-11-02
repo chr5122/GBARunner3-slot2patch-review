@@ -1,19 +1,20 @@
 {
   "date": "2026-11-02",
-  "scope": "living navigation docs including upstream PR index and H1 entry; excludes this manifest itself",
+  "scope": "living navigation docs after H1+SR2 community mainline integration; excludes this manifest",
   "sha256": {
-    "README.md": "b0a85e4c1132a7fa3cc89a5026e45b737729bdf97eedea0e3e4ba7ff559d2323",
-    "docs/PATCH.md": "5e2fa8b572f36959dbc43cef936e172a500b229384b9e5ccb50343478d48e931",
+    "README.md": "2f92e44045d612d090b3e55ea3709441b44d08ba819ba717e6cfb6852e9438c7",
+    "docs/PATCH.md": "d7bc96073b3820f13c828fde335c6b1510601e3502ecef73650ea97ceda5c276",
     "docs/SAVE.md": "ffd1bf87381c80518d66fd3d106fefb6114e439633b806da238f83c59d014692",
-    "docs/STATUS.md": "fdede6170fbe907dde0d35ccbc2c9aeceb6aad00a8c9bb2c299a4cf2b5c3128b",
+    "docs/STATUS.md": "81141c3f3cf50ec1679ffa23e9e0ac24331fc009283148d2a2e1dac76a9a3bf2",
     "docs/REVIEW.md": "3a99c1ac867c4c4c407a254e622e82d7e4e12b75cc5688ad88f2a9075a631831",
-    "docs/VERSIONS.md": "e94063d038b8394018295dae5651e200d6d835fa14e55f56ee1530b412202a76",
-    "docs/RELEASE_PREPARATION.md": "7c42f9f18a2b298ea082a72c0e17bacb7f0d87290ff76ba42bfaafa77969e53d",
-    "docs/MAINTENANCE.md": "6ef793295e38a35400714d135293b11025d53073d32eb3b626a919e003e0b546",
+    "docs/VERSIONS.md": "060e16bf44085b2ffa1bdb1f6ca60b3ba91a339e9cb743cf76035c10ddb62cb4",
+    "docs/RELEASE_PREPARATION.md": "f951095172ce9067c74122fea046456931a0682566f6df5cd183ab8c3df0239f",
+    "docs/MAINTENANCE.md": "e14f7fa5eda33ca657437e4feefe2c4bbc42bf4b0d2292e3b93b33a984152d02",
     "docs/HISTORY_D2_README.md": "898fc1b733be3f5f1c498590649a86df9f8e40f04bf1f355e32c148c84580679",
     "docs/archive/README_D2_G1.original.txt": "6d361b0c783c7fcbc1595f715c426861efc4878932abe078321e3c560884334b",
     "docs/TOOLS.md": "458f934b967e0142f250dd360290c8419077f9aee5e8bdc255cf86da9c5912cf",
-    "docs/VERSION_HISTORY.md": "c73d65d436b60d8540e4549be1364ee60dcb412583f79ede713484c003fdb726",
-    "docs/UPSTREAM_PRS.md": "ba298e606e0f0c90a53a40a7be812f912c11c04e6a7066b78fae5188412b53af"
+    "docs/VERSION_HISTORY.md": "9060fd481224c9a83b07a8f0d95557c603c9433d19a2094ae022680566ddfb2e",
+    "docs/UPSTREAM_PRS.md": "ba298e606e0f0c90a53a40a7be812f912c11c04e6a7066b78fae5188412b53af",
+    "h1_sr2_mainline/README.md": "5e971efe7c777b8df04e7047224dbb57b0593c7e6f3f378814f14c086f6c1335"
   }
 }

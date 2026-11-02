@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-02",
+  "scope": "community PATCH source mainline",
+  "user_authorization": "SR2验证成功 与h1一同并入主线",
+  "source_repository": "chr5122/GBARunner3",
+  "source_branch": "community/slot2patch",
+  "source_commit": "65866604e5fd4e90c51eb32e6ea34bb251d075c4",
+  "review_main_repository": "chr5122/GBARunner3-slot2patch-review",
+  "file": "GBARunner3_PATCH_H1_SR2.nds",
+  "bytes": 228864,
+  "sha256": "1aa3ab06bd34c140c260bd833f3777714324ec1b50e24d8e0513628e16125199",
+  "a2_included": false,
+  "sr1_intercept_included": false,
+  "coherent_scanline_refinement": true,
+  "individual_h1_sr2_hardware_feedback": true,
+  "combined_hardware_tested": false,
+  "combined_model_regression": "PASS",
+  "save_mode_changed_by_this_integration": false
+}

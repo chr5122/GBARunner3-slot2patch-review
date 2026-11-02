@@ -1,0 +1,16 @@
+{
+  "scope": "H1+SR2 mainline materials, excluding this manifest",
+  "sha256": {
+    "README.md": "5e971efe7c777b8df04e7047224dbb57b0593c7e6f3f378814f14c086f6c1335",
+    "integration_results.json": "460c0542bfaee53611c1e61ec29770d07006e5103a436c31e3f73dc2511c9cf4",
+    "BASELINE.json": "b400bbd20b1102b8c775d9716067101a793ce7a1b0b47cc18e00bae1235ced83",
+    "verification.json": "65c725b8442a45a85a701812cf6ce369e329896008106517346094c89a7eddab",
+    "H1_COHERENT_SAMPLE.diff": "788960731bf21e7c808bdd929cef7c97715c8d1154b08959afb8921d7dd3be2c",
+    "H1_TO_SR2.diff": "5d35eb43b810e071b5d8fb4652e9402ee83a98d95b003c1933b76c08d4762019",
+    "B3_TO_H1_SR2.diff": "9a0a290217a3bb4521a0d3875a81cf1d01943d9fa0fd7b813e484dbc40a5ab64",
+    "build.json": "caec1b72bc47aae9b61c6d3b898c1ad9f883da3ed6ffe069d4b1d38ebf4b4474",
+    "source/SdCache/SdCache.c": "bcc1d7e227a67fa61f9933b4ba18a32e8d13583c71f782e3864888c61e91dedb",
+    "source/VirtualMachine/VMSwi.s": "54776a786b5f68657e3dc059d6aef71b3a47dbd999d39064fc7e1684f4087602",
+    "source/Emulator/HBlankIrq.s": "27da823bc1fee6357e2890311ab0c02dabe2c3ca82bc984a4e83731ec2eebed3"
+  }
+}

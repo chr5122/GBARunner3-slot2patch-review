@@ -15,15 +15,15 @@
 
 ## 当前统一入口
 
-**H1 共享 HBlank 时序修复：** [Wokann PR #9](https://github.com/Wokann/GBARunner3/pull/9) · [源码差异与验证材料](h1_window_dma/README.md)。社区组合 H1 已收到用户实机正常反馈；上游独立移植为 Draft，未升级基线，未包含 A2/SR2。
+**2026-11-02 社区 PATCH 主线已整合 H1＋SR2**（含跨行状态一致采样加固）。[整合记录](h1_sr2_mainline/README.md) · [完整源码](https://github.com/chr5122/GBARunner3/tree/65866604e5fd4e90c51eb32e6ea34bb251d075c4)。H1/SR2 分别有用户实机成功反馈；最终组合通过电脑回归，仍待实机复测。A2 未加入，save 线本轮未改。
 
 **已提交到卧看仓库的代码 PR：** [上游草稿与依赖顺序](docs/UPSTREAM_PRS.md)。完整源码分支已分别构建；新的拆分构建仍待实机回归，现有运行基线保持不变。
 
-声音修复、B3 和新版打包工具的材料已汇总到 `main`，无需为阅读不同功能来回切换分支。patch / save 仍是两个独立运行文件；这次整合不重编译 NDS、不改变本地 R1 基线，也没有创建正式 NDS Release。
+声音、B3、H1/SR2 和电脑打包工具的材料集中在 `main`。PATCH 后续开发以 H1＋SR2 整合源码为准，B3/H1/SR2 历史产物保留；save 保持独立。本轮构建了新组合，但没有创建正式 NDS Release。
 
 | 要看什么 | 当前入口 | 对应产物／范围 |
 |---|---|---|
-| patch 最新候选 | [B3 材料](b3_thumb_bx_strict_ram/README.md) · [模式说明](docs/PATCH.md) | `GBARunner3_PATCH_B3.nds`，原名 `B3_THUMB_BX_STRICT_RAM_TEST.nds` |
+| patch 当前代码主线 | [H1＋SR2 整合](h1_sr2_mainline/README.md) · [完整源码](https://github.com/chr5122/GBARunner3/tree/65866604e5fd4e90c51eb32e6ea34bb251d075c4) | `GBARunner3_PATCH_H1_SR2.nds`，组合仍待实机复测 |
 | save 最新候选 | [G1S+B3 材料](g1s_b3_thumb_bx/README.md) · [模式说明](docs/SAVE.md) | `GBARunner3_SAVE_G1S_B3.nds`，原名 `G1S_B3_TEST.nds` |
 | 电脑补丁打包工具 | [工具入口](docs/TOOLS.md) · [源码和已有 Mac / Windows 包](slot2patch_tool_v2/README.md) | 工具包已在仓库；扫描／自动修复仍按工具的已知限制使用 |
 | 历史版本和诊断材料 | [版本沿革](docs/VERSION_HISTORY.md) · [产物哈希](docs/VERSIONS.md) | 保留原目录、提交、历史分支及回退关系 |
@@ -71,5 +71,6 @@ PR #2、#3、#5 已合入本仓库 `main`；重复的早期工具 PR #4 已关�
 原补丁、构建 JSON 和旧 SHA 清单按历史记录保留。新增导航文件的当前哈希单列在 [DOCS_SHA256.json](DOCS_SHA256.json)，维护规则见 [docs/MAINTENANCE.md](docs/MAINTENANCE.md)。
 
 旧的诊断、布局、失败注入、音频及硬件范围说明仍可从原始文档查阅；运行期 SD 只读也不表示卡带存档被写保护。来源与原文件声明见 [NOTICE.md](NOTICE.md)。
+
 
 

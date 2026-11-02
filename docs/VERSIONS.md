@@ -1,5 +1,7 @@
 # 版本、父本与产物指纹
 
+**2026-11-02 社区 PATCH 主线已整合 H1＋SR2**（含跨行状态一致采样加固）。[整合记录](../h1_sr2_mainline/README.md) · [完整源码](https://github.com/chr5122/GBARunner3/tree/65866604e5fd4e90c51eb32e6ea34bb251d075c4)。H1/SR2 分别有用户实机成功反馈；最终组合通过电脑回归，仍待实机复测。A2 未加入，save 线本轮未改。
+
 [返回首页](../README.md) · [patch](PATCH.md) · [save](SAVE.md) · [状态](STATUS.md)
 
 这里的版本名用于区分社区实验产物，不代表 Wokann/Gericom 的官方版本号。以下 NDS 均未放入本仓库。
@@ -35,3 +37,14 @@ B1/B2 是 B3 之前的研究候选，不作为当前对照候选列出。B2 → 
 NDS 哈希标识具体二进制，不表示本仓库已经提供该二进制或完成跨设备认证。构建 JSON 的 `hardware_tested:false` 是写出时的状态，后续用户反馈记录在 [STATUS.md](STATUS.md)，不重写冻结证据。
 
 原根目录 `SHA256.json` 保留 D2/G1 历史指纹；整理后的导航文档使用 [DOCS_SHA256.json](../DOCS_SHA256.json)。主分支和不同 PR 的文件清单各有适用范围。
+
+
+## H1／SR2 主线新增指纹
+
+| 产物 | 关系 | 字节数 | SHA256 |
+|---|---|---:|---|
+| 已测 H1 | B3＋H1 | 228864 | `7e77a51d32f2e7d34ac865b462dec887eb8fb9c582cb2c116c3c28ae26de48f6` |
+| 已测 SR2 | B3＋SR2；由 iCloud 实物核对 | 227840 | `c4d6dc5b5efb4b967191a720dc76d1c78c070e148be13aea1416b88ccc17ff5b` |
+| 当前 H1＋SR2 | H1＋SR2＋跨行一致采样加固 | 228864 | `1aa3ab06bd34c140c260bd833f3777714324ec1b50e24d8e0513628e16125199` |
+
+仅代码主线已整合；最终组合尚未实机测试。历史构建 JSON 保持原样，当前状态见整合记录。

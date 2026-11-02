@@ -1,0 +1,17 @@
+{
+  "name": "PATCH H1+SR2 (coherent scanline sample)",
+  "sha256": "1aa3ab06bd34c140c260bd833f3777714324ec1b50e24d8e0513628e16125199",
+  "bytes": 228864,
+  "parent_h1_sha256": "7e77a51d32f2e7d34ac865b462dec887eb8fb9c582cb2c116c3c28ae26de48f6",
+  "sr2_reference_sha256": "c4d6dc5b5efb4b967191a720dc76d1c78c070e148be13aea1416b88ccc17ff5b",
+  "itcm_end": "0x7ff0",
+  "core_bytes": 132064,
+  "legacy_tail_preserved_bytes": 228,
+  "source_changes_after_h1": [
+    "code/core/arm9/source/VirtualMachine/VMSwi.s",
+    "code/core/arm9/source/Emulator/HBlankIrq.s"
+  ],
+  "a2_included": false,
+  "combined_hardware_tested": false,
+  "individual_h1_and_sr2_hardware_feedback": "user reports both passed; combined binary and coherent-sample guard not yet hardware tested"
+}
