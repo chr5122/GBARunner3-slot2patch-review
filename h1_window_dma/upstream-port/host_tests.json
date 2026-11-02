@@ -1,0 +1,9 @@
+{
+  "pass": true,
+  "gate_cases": 69673,
+  "poll_cases": 1054,
+  "copy_cases": 5,
+  "cpu_irq_unmasking": false,
+  "scope": "actual helper C logic with host MMIO/memcpy stubs",
+  "tested_helper_sha256": "d907abf4ed3d951092b6124baa79df32bf7633d8044b81d37f5bb7b7b76f3e78"
+}

@@ -1,0 +1,207 @@
+{
+  "pass": true,
+  "source_changes_after_alignment": [
+    "code/core/arm9/source/Emulator/HBlankIrq.s",
+    "code/core/arm9/source/Peripherals/DmaTransfer.c",
+    "code/core/arm9/source/SdCache/SdCache.c"
+  ],
+  "arm7_identical": true,
+  "header_crc_valid": true,
+  "complete_core_copy": true,
+  "new_persistent_state": false,
+  "critical_ram_symbols_unchanged": [
+    "__heap_start",
+    "__heap_end",
+    "sdc_cache",
+    "dma_state",
+    "emu_ioRegisters",
+    "dtcmIrqStackEnd"
+  ],
+  "data_relocated_by_linker": [
+    {
+      "symbol": "_ZL11sNullLogger",
+      "old": "0x680fcd8",
+      "new": "0x680fce8"
+    },
+    {
+      "symbol": "_ZL13sSplashScreen",
+      "old": "0x680fd0c",
+      "new": "0x680fd1c"
+    },
+    {
+      "symbol": "_ZL14sIsNitroOutput",
+      "old": "0x680fd14",
+      "new": "0x680fd24"
+    },
+    {
+      "symbol": "_ZL16sEepromShortAddr",
+      "old": "0x681fd3c",
+      "new": "0x681fd4c"
+    },
+    {
+      "symbol": "_ZL17sCurrentWaitToken",
+      "old": "0x680fd28",
+      "new": "0x680fd38"
+    },
+    {
+      "symbol": "_ZL19sEepromConfig8kAddr",
+      "old": "0x681fd30",
+      "new": "0x681fd40"
+    },
+    {
+      "symbol": "_ZL20sEepromConfig512Addr",
+      "old": "0x681fd34",
+      "new": "0x681fd44"
+    },
+    {
+      "symbol": "_ZL20sEepromConfigVarAddr",
+      "old": "0x681fd38",
+      "new": "0x681fd48"
+    },
+    {
+      "symbol": "_ZL5sHeap",
+      "old": "0x680fd24",
+      "new": "0x680fd34"
+    },
+    {
+      "symbol": "_ZL7sAgbMem",
+      "old": "0x680fd2c",
+      "new": "0x680fd3c"
+    },
+    {
+      "symbol": "_ZN11Environment6_flagsE",
+      "old": "0x680fd20",
+      "new": "0x680fd30"
+    },
+    {
+      "symbol": "__bss_end",
+      "old": "0x681fd40",
+      "new": "0x681fd50"
+    },
+    {
+      "symbol": "__bss_end__",
+      "old": "0x681fd40",
+      "new": "0x681fd50"
+    },
+    {
+      "symbol": "__bss_vma",
+      "old": "0x680fcf0",
+      "new": "0x680fd00"
+    },
+    {
+      "symbol": "__data_end",
+      "old": "0x680fcf0",
+      "new": "0x680fd00"
+    },
+    {
+      "symbol": "__do_global_dtors_aux_fini_array_entry",
+      "old": "0x680fccc",
+      "new": "0x680fcdc"
+    },
+    {
+      "symbol": "__end__",
+      "old": "0x681fd40",
+      "new": "0x681fd50"
+    },
+    {
+      "symbol": "__frame_dummy_init_array_entry",
+      "old": "0x680fcbc",
+      "new": "0x680fccc"
+    },
+    {
+      "symbol": "__init_array_end",
+      "old": "0x680fccc",
+      "new": "0x680fcdc"
+    },
+    {
+      "symbol": "__init_array_start",
+      "old": "0x680fcbc",
+      "new": "0x680fccc"
+    },
+    {
+      "symbol": "__preinit_array_end",
+      "old": "0x680fcbc",
+      "new": "0x680fccc"
+    },
+    {
+      "symbol": "__preinit_array_start",
+      "old": "0x680fcbc",
+      "new": "0x680fccc"
+    },
+    {
+      "symbol": "_end",
+      "old": "0x681fd40",
+      "new": "0x681fd50"
+    },
+    {
+      "symbol": "completed.1",
+      "old": "0x680fcf0",
+      "new": "0x680fd00"
+    },
+    {
+      "symbol": "gColorLut",
+      "old": "0x680fd30",
+      "new": "0x680fd40"
+    },
+    {
+      "symbol": "gGbaBorderService",
+      "old": "0x680fd18",
+      "new": "0x680fd28"
+    },
+    {
+      "symbol": "gGbaDisplayConfigurationService",
+      "old": "0x680fd1c",
+      "new": "0x680fd2c"
+    },
+    {
+      "symbol": "gLogger",
+      "old": "0x680fd10",
+      "new": "0x680fd20"
+    },
+    {
+      "symbol": "g_slot2SaveType",
+      "old": "0x681fd3e",
+      "new": "0x681fd4e"
+    },
+    {
+      "symbol": "g_useSlot2Save",
+      "old": "0x680fcec",
+      "new": "0x680fcfc"
+    },
+    {
+      "symbol": "memu_biosOpcodes",
+      "old": "0x680fcdc",
+      "new": "0x680fcec"
+    },
+    {
+      "symbol": "object.0",
+      "old": "0x680fcf4",
+      "new": "0x680fd04"
+    }
+  ],
+  "itcm_end": "0x7fb0",
+  "vram_bss_end": "0x681fd50",
+  "host_tests": {
+    "pass": true,
+    "gate_cases": 69673,
+    "poll_cases": 1054,
+    "copy_cases": 5,
+    "cpu_irq_unmasking": false,
+    "scope": "actual helper C logic with host MMIO/memcpy stubs",
+    "tested_helper_sha256": "d907abf4ed3d951092b6124baa79df32bf7633d8044b81d37f5bb7b7b76f3e78"
+  },
+  "linked_guard_tests": {
+    "pass": true,
+    "engine": "linked ARM guard on melonDS ARM946 interpreter",
+    "cases": 5120,
+    "suppressed": 16,
+    "r0_r12_lr_preserved": true,
+    "memory_writes": 0,
+    "stack_growth": 0,
+    "limits": "guard only; replay and hardware validation separate"
+  },
+  "hardware_tested": false,
+  "full_game_replay": false,
+  "baseline_changed": false,
+  "nds_sha256": "44ab8ffdecfb85080663c3d65453a5a5e9139dc094d7d007a83e9f7aa37bff77"
+}

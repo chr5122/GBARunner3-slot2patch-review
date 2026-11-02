@@ -15,7 +15,9 @@
 
 ## 当前统一入口
 
-**已提交到卧看仓库的代码 PR：** [七项上游草稿与依赖顺序](docs/UPSTREAM_PRS.md)。完整源码分支已分别构建；新的拆分构建仍待实机回归，现有运行基线保持不变。
+**H1 光圈时序修复：** [Wokann PR #9](https://github.com/Wokann/GBARunner3/pull/9) · [源码差异与验证材料](h1_window_dma/README.md)。社区组合 H1 已收到用户实机正常反馈；上游独立移植为 Draft，未升级基线，未包含 A2/SR2。
+
+**已提交到卧看仓库的代码 PR：** [上游草稿与依赖顺序](docs/UPSTREAM_PRS.md)。完整源码分支已分别构建；新的拆分构建仍待实机回归，现有运行基线保持不变。
 
 声音修复、B3 和新版打包工具的材料已汇总到 `main`，无需为阅读不同功能来回切换分支。patch / save 仍是两个独立运行文件；这次整合不重编译 NDS、不改变本地 R1 基线，也没有创建正式 NDS Release。
 
@@ -69,3 +71,4 @@ PR #2、#3、#5 已合入本仓库 `main`；重复的早期工具 PR #4 已关�
 原补丁、构建 JSON 和旧 SHA 清单按历史记录保留。新增导航文件的当前哈希单列在 [DOCS_SHA256.json](DOCS_SHA256.json)，维护规则见 [docs/MAINTENANCE.md](docs/MAINTENANCE.md)。
 
 旧的诊断、布局、失败注入、音频及硬件范围说明仍可从原始文档查阅；运行期 SD 只读也不表示卡带存档被写保护。来源与原文件声明见 [NOTICE.md](NOTICE.md)。
+

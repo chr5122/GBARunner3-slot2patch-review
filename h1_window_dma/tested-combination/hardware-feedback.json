@@ -1,0 +1,14 @@
+{
+  "artifact": "H1_CAVE/PATCH_H1.nds",
+  "sha256": "7e77a51d32f2e7d34ac865b462dec887eb8fb9c582cb2c116c3c28ae26de48f6",
+  "bytes": 228864,
+  "validation_source": "user_report",
+  "user_statement": "H1验证了 没问题",
+  "hardware_validation_reported": true,
+  "scope": "User reports H1 passed the current hardware test; individual subtests and duration were not specified.",
+  "context": "Existing DS Lite / iTouchDS / slot2patch investigation",
+  "baseline_changed": false,
+  "sr2_merged": false,
+  "binary_changed": false,
+  "recorded_at": "2026-11-02T12:21:31.831761+00:00"
+}
