@@ -1,8 +1,8 @@
 {
   "date": "2026-11-02",
-  "scope": "living navigation docs after H1+SR2 community mainline integration; excludes this manifest",
+  "scope": "current homepage and living navigation docs; excludes this manifest",
   "sha256": {
-    "README.md": "2f92e44045d612d090b3e55ea3709441b44d08ba819ba717e6cfb6852e9438c7",
+    "README.md": "144ded1a0f18b90dfda71bba782d2644e73f133b3939f45457680b69ae377fc5",
     "docs/PATCH.md": "d7bc96073b3820f13c828fde335c6b1510601e3502ecef73650ea97ceda5c276",
     "docs/SAVE.md": "ffd1bf87381c80518d66fd3d106fefb6114e439633b806da238f83c59d014692",
     "docs/STATUS.md": "81141c3f3cf50ec1679ffa23e9e0ac24331fc009283148d2a2e1dac76a9a3bf2",

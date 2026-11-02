@@ -1,76 +1,82 @@
-# GBARunner3 社区改进记录：patch / save
+# GBARunner3 社区改进：PATCH / SAVE
 
-这里整理 CHONG 512 的 GBARunner3 Slot-2 实验、源码差异与验证记录，供 Wokann（卧看微尘）和其他贡献者审阅。
+**最新更新：2026-11-02｜社区 PATCH 主线已合入 H1＋SR2，并补充跨行采样加固。**
 
-**来源：** GBARunner3 基础项目来自 [Gericom 与原项目贡献者](https://github.com/Gericom/GBARunner3)；Slot-2 存档、外挂补丁及相关分支基于 [Wokann/GBARunner3](https://github.com/Wokann/GBARunner3)。本仓库记录在这些工作之上的社区修改，不代表上游已经采纳。
+[当前整合与验证记录](h1_sr2_mainline/README.md) · [完整 PATCH 源码](https://github.com/chr5122/GBARunner3/tree/65866604e5fd4e90c51eb32e6ea34bb251d075c4) · [上游 PR 状态](docs/UPSTREAM_PRS.md) · [版本与 SHA256](docs/VERSIONS.md)
+
+这里整理 CHONG 512 的 Slot-2 社区改进。基础项目来自 [Gericom 与原项目贡献者](https://github.com/Gericom/GBARunner3)，Slot-2 save／patch 分支来自 [Wokann（卧看微尘）](https://github.com/Wokann/GBARunner3)。社区 main 的整合不代表上游已经合并。
+
+## 当前版本与验收状态
+
+| 项目 | 当前版本／状态 | 入口 |
+|---|---|---|
+| **PATCH 代码主线** | **H1＋SR2＋跨行状态一致采样加固**；保留 B3 及其前置功能，未加入 A2 | [整合记录](h1_sr2_mainline/README.md) · [完整源码](https://github.com/chr5122/GBARunner3/tree/65866604e5fd4e90c51eb32e6ea34bb251d075c4) |
+| PATCH 实机反馈 | 用户分别确认 H1、SR2 成功；**新组合及新增采样加固仍待实机复测** | [验证证据](h1_sr2_mainline/integration_results.json) |
+| SAVE 候选 | G1S＋B3；本轮没有移植 H1／SR2，也没有修改 save 代码 | [SAVE 项目](docs/SAVE.md) · [G1S＋B3 材料](g1s_b3_thumb_bx/README.md) |
+| NDS 下载 | 当前仓库未提供 NDS 安装包，也未创建正式运行器 Release | [发布准备与验收](docs/RELEASE_PREPARATION.md) |
+
+当前 PATCH 构建文件名：`GBARunner3_PATCH_H1_SR2.nds`，228864 字节。SHA256：
+
+```text
+1aa3ab06bd34c140c260bd833f3777714324ec1b50e24d8e0513628e16125199
+```
+
+这是最终组合文件的指纹，不能与单独 H1、单独 SR2 或上游 PR 的独立构建混用。
+
+## 这次合入了什么
+
+- **H1：共享 HBlank 时序与窗口 DMA 维护。** 问题所在路径在全游戏运行中共用，不依赖洞穴地图；洞穴光圈只是更容易观察错行的复现场景。维护仍限已审计的窗口 DMA0 配置，其他效果不宣称全部修复。
+- **SR2：high-ROM SWI 半字选择修复。** 修正绿宝石软重启前 SWI1 被误读成存档 SWI 0x8D 的路径，避免该路径进入 PC=4 白屏。根因排查来自用户提供的 Grok 交接。
+- **跨行采样加固。** 合并回归发现行号和状态分开读取可能跨扫描线；现在一致读取 DISPSTAT／VCOUNT，避免误过滤一次正常 HBlank。
+
+[三文件完整差异（B3 → 当前组合）](h1_sr2_mainline/B3_TO_H1_SR2.diff) · [构建与范围核对](h1_sr2_mainline/verification.json) · [原始 H1 材料](h1_window_dma/README.md)
+
+## 最新组合回归结果
+
+| 测试 | 最终组合结果 |
+|---|---|
+| 大光圈：静止、走动、停下 | 446/446 帧与原 H1 画面一致，越界 0；每帧 DMA0 160 次 |
+| 小光圈：静止、走动、停下 | 446/446 帧与原 H1 画面一致，越界 0；每帧 DMA0 160 次 |
+| 每组卡带复制审计 | 205 次复制、27 次分段、86 次维护；内容错误、提前发布／重入和未完成复制均未发现 |
+| 软重启对照 | 原 H1 误派发 SWI 0x8D、最终 PC=4；新组合正确进入 SWI1／SWI0、BIOS SoftReset 并返回开场 |
+| 实际 ARM 指令检查 | SR2 解码 8192 例；一致采样 guard 10240 例通过 |
+| 测试期间的写入 | 虚拟 SD 写入、保存持久化请求及虚拟 Flash 变化均为 0，原输入哈希不变 |
+
+**以上是电脑模型结果，不是 NDSL 实机耗时或 FPS。** H1、SR2 分别的用户实机成功反馈已记录；最终组合尚未实机复测，完整通关名单也未在本轮重跑。这组回放没有新增真实卡带保存验收。
+
+## 向 Wokann 提交的 PR
+
+| 内容 | 状态 |
+|---|---|
+| H1 共享 HBlank 时序及后续一致采样加固 | **已提交 [Wokann PR #9](https://github.com/Wokann/GBARunner3/pull/9)，Draft，待作者审阅** |
+| SR2 SWI 解码 | **已合入咱们社区主线，尚未单独向 Wokann 提 PR** |
+| 对齐、声音、B3、运行期日志、读取失败保护 | 已按功能拆成独立 Draft PR，见[完整索引](docs/UPSTREAM_PRS.md) |
+
+PR #9 只含独立 H1 及采样加固，**不含 SR2 或整套社区组合功能**。PR 构建与本页组合构建有各自的哈希和验证范围。Wokann／Gericom 是否采纳由上游决定。
 
 ## 先选运行方式
 
-| 方式 | 游戏程序与中文内容来自哪里 | Slot-2 卡带在本项目测试中的作用 | 入口 |
+| 方式 | 游戏程序与中文内容 | Slot-2 正版卡的作用 | 说明 |
 |---|---|---|---|
-| **patch：slot2patch** | 正版卡原 ROM + SD 上的外挂补丁；修改块经 PRE 缓存读取 | 提供原版 ROM 和卡带存档 | [patch 项目](docs/PATCH.md) |
-| **save：slot2save** | SD 上完整的游戏 ROM，可使用汉化 ROM | 使用对应正版卡的存档 | [save 项目](docs/SAVE.md) |
+| **PATCH：slot2patch** | 卡带原 ROM＋SD 外挂补丁；修改块经 PRE 提供 | 原版 ROM 与卡带存档 | [PATCH 项目](docs/PATCH.md) |
+| **SAVE：slot2save** | SD 中完整游戏 ROM，可使用汉化 ROM | 使用对应卡带存档 | [SAVE 项目](docs/SAVE.md) |
 
-两条线有各自的 NDS、父本和测试记录。**G1S 是 save 版；G1、R1、B3 是这里的 patch 版命名。** G1S+B3 是把 B3 思路移植到 save 的另一个产物。
+两种模式使用不同 NDS。G1S 是 save 版；G1、R1、B3、H1＋SR2 在本页 PATCH 沿革中分别记录，不能混用产物。
 
-## 当前统一入口
+## 继承功能与历史材料
 
-**2026-11-02 社区 PATCH 主线已整合 H1＋SR2**（含跨行状态一致采样加固）。[整合记录](h1_sr2_mainline/README.md) · [完整源码](https://github.com/chr5122/GBARunner3/tree/65866604e5fd4e90c51eb32e6ea34bb251d075c4)。H1/SR2 分别有用户实机成功反馈；最终组合通过电脑回归，仍待实机复测。A2 未加入，save 线本轮未改。
+当前 PATCH 主线继承 D2 自动 PRE／运行期日志调整、G1 声音回绕、可选占位 ROM、R1 读取失败保护、hicode 对齐和 B3 缓存 Thumb BX 快捷处理。旧记录与原构建 JSON 保留，后续反馈不回写历史证据。
 
-**已提交到卧看仓库的代码 PR：** [上游草稿与依赖顺序](docs/UPSTREAM_PRS.md)。完整源码分支已分别构建；新的拆分构建仍待实机回归，现有运行基线保持不变。
+| 材料 | 入口 |
+|---|---|
+| D2、G1 与早期实机记录 | [PATCH 沿革](docs/PATCH.md) · [实机历史](FIELD_TESTS.md) · [G1 音频记录](G1_AUDIO_POP_FIX.md) |
+| B3 与原 save 候选 | [PATCH B3](b3_thumb_bx_strict_ram/README.md) · [SAVE G1S](g1s_dma_wrap/README.md) · [SAVE G1S＋B3](g1s_b3_thumb_bx/README.md) |
+| 历史翻卡性能对照 | [验证状态](docs/STATUS.md)；PATCH R1 60/81/127 → B3 38/37/37，SAVE G1S 63 → G1S＋B3 41，均为各自模型帧数，不横比两模式速度 |
+| 电脑补丁打包工具 | [工具入口](docs/TOOLS.md) · [源码与已有 Mac／Windows 工具包](slot2patch_tool_v2/README.md) |
+| 版本、验收与审阅导航 | [版本沿革](docs/VERSION_HISTORY.md) · [版本哈希](docs/VERSIONS.md) · [验证状态](docs/STATUS.md) · [审阅入口](docs/REVIEW.md) |
+| 历史首页与维护规则 | [D2/G1 首页存档](docs/HISTORY_D2_README.md) · [维护约定](docs/MAINTENANCE.md) · [来源与声明](NOTICE.md) |
 
-声音、B3、H1/SR2 和电脑打包工具的材料集中在 `main`。PATCH 后续开发以 H1＋SR2 整合源码为准，B3/H1/SR2 历史产物保留；save 保持独立。本轮构建了新组合，但没有创建正式 NDS Release。
+本仓库 `main` 是审阅材料与源码阅读副本；**可编译的完整 PATCH 源码在 [chr5122/GBARunner3 的 community/slot2patch](https://github.com/chr5122/GBARunner3/tree/community/slot2patch)**，当前固定提交为 `65866604e5fd4e90c51eb32e6ea34bb251d075c4`。构建需要原项目工具链和 libtwl submodule，步骤见[整合记录](h1_sr2_mainline/README.md)。
 
-| 要看什么 | 当前入口 | 对应产物／范围 |
-|---|---|---|
-| patch 当前代码主线 | [H1＋SR2 整合](h1_sr2_mainline/README.md) · [完整源码](https://github.com/chr5122/GBARunner3/tree/65866604e5fd4e90c51eb32e6ea34bb251d075c4) | `GBARunner3_PATCH_H1_SR2.nds`，组合仍待实机复测 |
-| save 最新候选 | [G1S+B3 材料](g1s_b3_thumb_bx/README.md) · [模式说明](docs/SAVE.md) | `GBARunner3_SAVE_G1S_B3.nds`，原名 `G1S_B3_TEST.nds` |
-| 电脑补丁打包工具 | [工具入口](docs/TOOLS.md) · [源码和已有 Mac / Windows 包](slot2patch_tool_v2/README.md) | 工具包已在仓库；扫描／自动修复仍按工具的已知限制使用 |
-| 历史版本和诊断材料 | [版本沿革](docs/VERSION_HISTORY.md) · [产物哈希](docs/VERSIONS.md) | 保留原目录、提交、历史分支及回退关系 |
-
-这两份 NDS 只记录名称和哈希，**尚未在本仓库提供下载**。工具目录里的 ZIP 是电脑端打包工具，不是 NDSL 上运行的 GBR3 安装包。
-
-## 当前材料与进度
-
-| 模式 | 版本/改动 | 目前证据 | 在哪里看 |
-|---|---|---|---|
-| patch | D2：启动自动生成 PRE，运行期关闭日志/周期写盘 | 有用户实机、缓存生成及保存互通反馈。2026-11-01 用户实机确认正常（火红、绿宝石） | [说明](docs/PATCH.md#d2-pre) |
-| patch | G1：m4a PCM 声音 DMA 回绕 | 有用户反馈切场景爆音消失。2026-11-01 用户实机确认正常（火红、绿宝石） | [G1 原始记录](G1_AUDIO_POP_FIX.md) · [PR #1，已合并到本仓库](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/1) |
-| patch | 占位 ROM 可选（romopt，2026-10-28）：从菜单直接启动时 SD 根目录不再需要占位 `rom.gba` | melonDS 模拟器对照；2026-11-01 用户实机确认正常（火红、绿宝石）。此行为由 R1、B3 继承，见状态页 | [说明](docs/PATCH.md#rom-optional) · [试验材料](rom_gba_optional/README.md) |
-| patch | R1：SD 读取结果传递、失败缓存禁止发布、嵌套缓冲保护 | 本地正式基线；电脑验证及用户实机成功反馈。2026-11-01 用户实机确认正常（火红、绿宝石） | [R1 状态与材料边界](docs/PATCH.md#r1-read-guard) |
-| patch | B3：缓存内 Thumb BX 快捷处理，目标限标准 RAM/低 ROM | 电脑复核通过；用户反馈两模式实机体验良好，分项验收见状态页。2026-11-01 用户实机确认正常（火红、绿宝石） | [B3 材料](b3_thumb_bx_strict_ram/README.md) · [合并记录 #3](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/3) |
-| save | G1S：移植 m4a PCM DMA 回绕 | 有用户 NDSL 实机反馈，切场景“咔”声消失。2026-11-01 用户实机确认正常（火红、绿宝石） | [G1S 材料](g1s_dma_wrap/README.md) · [合并记录 #2](https://github.com/chr5122/GBARunner3-slot2patch-review/pull/2) |
-| save | G1S+B3：在 G1S 上移植 BX 快捷处理 | 已有电脑模型结果及用户两模式实机体验反馈；保存往返待分项补录。2026-11-01 用户实机确认正常（火红、绿宝石） | [G1S+B3 材料](g1s_b3_thumb_bx/README.md) |
-
-- [验证状态与结果](docs/STATUS.md)：区分模型、独立复核、用户实机和未测项目。
-- [版本与 SHA256](docs/VERSIONS.md)：准确区分 NDS、父本、补丁基准。
-- [作者审阅入口](docs/REVIEW.md)：按功能查看源码差异，避免叠错补丁。
-- [历史 D2/G1 首页](docs/HISTORY_D2_README.md)：原有详细记录完整保留。
-
-## 最新模型结果
-
-| 模式与固定场景 | 对照 | 候选 | 指标 |
-|---|---|---|---|
-| patch，绿宝石八地址配置 | R1：60 / 81 / 127 | B3：38 / 37 / 37 | 三次训练家卡翻面模型帧数 |
-| save，绿宝石八地址配置 | G1S：63 | G1S+B3：41 | 首次训练家卡翻面模型帧数 |
-
-**这是两组分别匹配输入的电脑模型对照，不是 NDSL 实机 FPS，也不能横向比较两种模式的绝对速度。**
-
-## 发布准备（2026-10-31）
-
-两份原始测试文件已核对哈希，并在本地分别固定候选包、升级教程、回退版和源码快照。二进制没有重新编译或设为默认。
-
-[发布准备与剩余验收](docs/RELEASE_PREPARATION.md)：当前没有上架 NDS 下载或创建正式 Release，保存/重启/原生 GBA 互通按候选分别记录。
-
-## 仓库如何使用
-
-本仓库是审阅材料和部分源码阅读副本，**不是完整、可单独编译的源码 checkout**。目前没有在这里发布 NDS 安装包或正式 Release。
-
-PR #2、#3、#5 已合入本仓库 `main`；重复的早期工具 PR #4 已关闭并指向 #5。下载 `main` 的 ZIP 可得到这些材料和工具文件，但不是完整的运行器源码或 NDS 安装包。各功能的提交与讨论仍可独立查看；本仓库合并不等于 Wokann 或 Gericom 已合入其项目。
-
-原补丁、构建 JSON 和旧 SHA 清单按历史记录保留。新增导航文件的当前哈希单列在 [DOCS_SHA256.json](DOCS_SHA256.json)，维护规则见 [docs/MAINTENANCE.md](docs/MAINTENANCE.md)。
-
-旧的诊断、布局、失败注入、音频及硬件范围说明仍可从原始文档查阅；运行期 SD 只读也不表示卡带存档被写保护。来源与原文件声明见 [NOTICE.md](NOTICE.md)。
-
-
+下载本材料仓库的 ZIP 不等于获得 NDS 安装包。工具目录的 ZIP 是电脑端工具；本仓库没有打包游戏 ROM、BIOS、存档或汉化资源。历史根 `SHA256.json` 保留旧含义，当前导航文件摘要见 [DOCS_SHA256.json](DOCS_SHA256.json)。
 
