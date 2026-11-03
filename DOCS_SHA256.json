@@ -1,20 +1,21 @@
 {
-  "date": "2026-11-02",
+  "date": "2026-11-04",
   "scope": "current homepage and living navigation docs; excludes this manifest",
   "sha256": {
-    "README.md": "144ded1a0f18b90dfda71bba782d2644e73f133b3939f45457680b69ae377fc5",
+    "README.md": "80cb860f846956c902124699e326e62aec07f60b2d6df5383a72b8c8ef3a9000",
     "docs/PATCH.md": "d7bc96073b3820f13c828fde335c6b1510601e3502ecef73650ea97ceda5c276",
     "docs/SAVE.md": "ffd1bf87381c80518d66fd3d106fefb6114e439633b806da238f83c59d014692",
     "docs/STATUS.md": "81141c3f3cf50ec1679ffa23e9e0ac24331fc009283148d2a2e1dac76a9a3bf2",
     "docs/REVIEW.md": "3a99c1ac867c4c4c407a254e622e82d7e4e12b75cc5688ad88f2a9075a631831",
-    "docs/VERSIONS.md": "060e16bf44085b2ffa1bdb1f6ca60b3ba91a339e9cb743cf76035c10ddb62cb4",
-    "docs/RELEASE_PREPARATION.md": "f951095172ce9067c74122fea046456931a0682566f6df5cd183ab8c3df0239f",
+    "docs/VERSIONS.md": "f77e50869b9aeeb510ff01fc3f3529362abf56304fa553e1f72720b062ad9aab",
+    "docs/RELEASE_PREPARATION.md": "cdc2ea2451662f121693cf186a40200eb8efc2d2236ca27af9d8a97b693b7ff7",
     "docs/MAINTENANCE.md": "e14f7fa5eda33ca657437e4feefe2c4bbc42bf4b0d2292e3b93b33a984152d02",
     "docs/HISTORY_D2_README.md": "898fc1b733be3f5f1c498590649a86df9f8e40f04bf1f355e32c148c84580679",
     "docs/archive/README_D2_G1.original.txt": "6d361b0c783c7fcbc1595f715c426861efc4878932abe078321e3c560884334b",
     "docs/TOOLS.md": "458f934b967e0142f250dd360290c8419077f9aee5e8bdc255cf86da9c5912cf",
     "docs/VERSION_HISTORY.md": "9060fd481224c9a83b07a8f0d95557c603c9433d19a2094ae022680566ddfb2e",
     "docs/UPSTREAM_PRS.md": "852a2ab8ac2d25d970f9ea91c82d278f0d457e56467c917f582a5870a07b5610",
-    "h1_sr2_mainline/README.md": "5e971efe7c777b8df04e7047224dbb57b0593c7e6f3f378814f14c086f6c1335"
+    "h1_sr2_mainline/README.md": "5e971efe7c777b8df04e7047224dbb57b0593c7e6f3f378814f14c086f6c1335",
+    "audio_a17/README.md": "dcbda94fc288d630ed4283b7c1652e4e89154c2275ec0cc55feef9fdea423150"
   }
 }

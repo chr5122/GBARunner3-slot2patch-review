@@ -1,5 +1,7 @@
 # 发布准备 · 2026-10-31
 
+**2026-11-04 更新：[A17 PATCH 音频测试版](../audio_a17/README.md)已提供 NDS、运行包和对应源码快照。它有用户实机试听反馈，尚未完成多游戏验收；未替换社区代码主线，SAVE 未改，也未创建正式 Release。下文保留较早候选的历史准备状态。**
+
 **2026-11-02 社区 PATCH 主线已整合 H1＋SR2**（含跨行状态一致采样加固）。[整合记录](../h1_sr2_mainline/README.md) · [完整源码](https://github.com/chr5122/GBARunner3/tree/65866604e5fd4e90c51eb32e6ea34bb251d075c4)。H1/SR2 分别有用户实机成功反馈；最终组合通过电脑回归，仍待实机复测。A2 未加入，save 线本轮未改。
 
 [返回首页](../README.md) · [验证状态](STATUS.md) · [版本指纹](VERSIONS.md)

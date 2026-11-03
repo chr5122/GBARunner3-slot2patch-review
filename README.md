@@ -1,6 +1,8 @@
 # GBARunner3 社区改进：PATCH / SAVE
 
-**最新更新：2026-11-02｜社区 PATCH 主线已合入 H1＋SR2，并补充跨行采样加固。**
+**最新更新：2026-11-04｜新增 A17 PATCH 音频测试版下载；社区代码主线仍为此前 H1＋SR2 整合。**
+
+**[下载 A17 NDS](audio_a17/GBARunner3_PATCH_A17.nds?raw=true) · [下载 A17 ZIP](audio_a17/GBARunner3_PATCH_A17.zip?raw=true) · [A17 改进、源码与验证范围](audio_a17/README.md)**
 
 [当前整合与验证记录](h1_sr2_mainline/README.md) · [完整 PATCH 源码](https://github.com/chr5122/GBARunner3/tree/65866604e5fd4e90c51eb32e6ea34bb251d075c4) · [上游 PR 状态](docs/UPSTREAM_PRS.md) · [版本与 SHA256](docs/VERSIONS.md)
 
@@ -13,7 +15,7 @@
 | **PATCH 代码主线** | **H1＋SR2＋跨行状态一致采样加固**；保留 B3 及其前置功能，未加入 A2 | [整合记录](h1_sr2_mainline/README.md) · [完整源码](https://github.com/chr5122/GBARunner3/tree/65866604e5fd4e90c51eb32e6ea34bb251d075c4) |
 | PATCH 实机反馈 | 用户分别确认 H1、SR2 成功；**新组合及新增采样加固仍待实机复测** | [验证证据](h1_sr2_mainline/integration_results.json) |
 | SAVE 候选 | G1S＋B3；本轮没有移植 H1／SR2，也没有修改 save 代码 | [SAVE 项目](docs/SAVE.md) · [G1S＋B3 材料](g1s_b3_thumb_bx/README.md) |
-| NDS 下载 | 当前仓库未提供 NDS 安装包，也未创建正式运行器 Release | [发布准备与验收](docs/RELEASE_PREPARATION.md) |
+| **PATCH 音频测试下载** | **A17**：已有用户实机试听改善反馈，多游戏验收未完成；未替换代码主线，未创建正式 Release | [NDS／ZIP／源码与说明](audio_a17/README.md) |
 
 当前 PATCH 构建文件名：`GBARunner3_PATCH_H1_SR2.nds`，228864 字节。SHA256：
 
@@ -78,5 +80,5 @@ PR #9 只含独立 H1 及采样加固，**不含 SR2 或整套社区组合功能
 
 本仓库 `main` 是审阅材料与源码阅读副本；**可编译的完整 PATCH 源码在 [chr5122/GBARunner3 的 community/slot2patch](https://github.com/chr5122/GBARunner3/tree/community/slot2patch)**，当前固定提交为 `65866604e5fd4e90c51eb32e6ea34bb251d075c4`。构建需要原项目工具链和 libtwl submodule，步骤见[整合记录](h1_sr2_mainline/README.md)。
 
-下载本材料仓库的 ZIP 不等于获得 NDS 安装包。工具目录的 ZIP 是电脑端工具；本仓库没有打包游戏 ROM、BIOS、存档或汉化资源。历史根 `SHA256.json` 保留旧含义，当前导航文件摘要见 [DOCS_SHA256.json](DOCS_SHA256.json)。
+运行器测试包请使用上方 A17 下载入口；工具目录的 ZIP 是电脑端工具。A17 为 PATCH 测试版，SAVE 下载状态不变。本仓库没有打包游戏 ROM、BIOS、存档或汉化资源。历史根 `SHA256.json` 保留旧含义，当前导航文件摘要见 [DOCS_SHA256.json](DOCS_SHA256.json)。
 

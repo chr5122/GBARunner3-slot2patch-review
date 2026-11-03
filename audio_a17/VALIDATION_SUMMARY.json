@@ -1,0 +1,24 @@
+{
+  "artifact": "GBARunner3_PATCH_A17.nds",
+  "sha256": "6f00e104b1b52a56aa69b2af3d57d0283a692fdd9ef9002e41d3c3fe8249fffe",
+  "bytes": 233472,
+  "same_as_previous_user_A17": true,
+  "recompiled_for_publication": false,
+  "frozen_elf_repack_exact": true,
+  "evidence_scope": "user-reported NDSL listening improvement; no device-side file hash extracted",
+  "baseline_promoted": false,
+  "save_mode_ported": false,
+  "M1_M2_M3_included": false,
+  "computer_validation": {
+    "straight_line_cases": 45000,
+    "register_update_cases": 15000,
+    "register_update_one_sample_fallback_differences": 411,
+    "linked_ARM7_cases": 2048
+  },
+  "limitations": [
+    "Multi-game/multi-flashcart qualification incomplete",
+    "No new hardware save/restart certification",
+    "Software reference does not model complete native analog output"
+  ],
+  "source_archive_entries": 824
+}
