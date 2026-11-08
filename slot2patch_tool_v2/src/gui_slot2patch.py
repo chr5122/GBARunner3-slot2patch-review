@@ -288,9 +288,10 @@ def main() -> None:
                     env = os.environ.copy()
                     env["PYTHONIOENCODING"] = "utf-8"
                     env["PYTHONUTF8"] = "1"
-                    p = subprocess.Popen(scmd, cwd=str(SCRIPT_DIR), stdout=subprocess.PIPE,
+                    p = subprocess.Popen(scmd, cwd=str(SCRIPT_DIR), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                          stderr=subprocess.STDOUT, text=True, encoding="utf-8",
-                                         errors="replace", env=env)
+                                         errors="replace", env=env,
+                                         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
                     assert p.stdout is not None
                     for line in p.stdout:
                         tail = (tail + [line])[-15:]
@@ -404,11 +405,15 @@ def main() -> None:
                 self._proc = subprocess.Popen(
                     cmd,
                     cwd=str(SCRIPT_DIR),
+                    stdin=subprocess.DEVNULL,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     text=True,
+                    encoding="utf-8",
+                    errors="replace",
                     bufsize=1,
                     env=env,
+                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
                 )
                 assert self._proc.stdout is not None
                 for line in self._proc.stdout:
@@ -566,3 +571,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

@@ -169,9 +169,16 @@ def run_tool(tool: Path, args: list[str]) -> None:
     cmd = [str(tool), *args]
     log(f"    $ {' '.join(cmd)}")
     try:
-        r = subprocess.run(cmd, check=False)
+        r = subprocess.run(
+            cmd, check=False, stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            text=True, encoding="utf-8", errors="replace",
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
     except OSError as e:
         die(f"无法启动 PatchTool: {e}")
+    if r.stdout:
+        log(r.stdout.rstrip())
     if r.returncode != 0:
         die(f"PatchTool 退出码 {r.returncode}")
 
@@ -472,3 +479,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+

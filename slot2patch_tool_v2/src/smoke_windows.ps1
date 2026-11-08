@@ -159,7 +159,12 @@ else { Note "GUI window created" }
 
 if (-not $ok) { Save-Summary 1 }
 
+Note "running complete synthetic patch generation with captured output"
+& python (Join-Path $SrcDir "smoke_generate.py") $exe.FullName --run-core
+if ($LASTEXITCODE -ne 0) { Note "FAIL synthetic generation exit=$LASTEXITCODE"; Save-Summary 1 }
+
 Note "packing $ZipPath from $($appDir.FullName)"
 & python (Join-Path $SrcDir "pack_windows_zip.py") $appDir.FullName $ZipPath
 if ($LASTEXITCODE -ne 0) { Note "FAIL pack exit=$LASTEXITCODE"; Save-Summary 1 }
 Save-Summary 0
+

@@ -41,7 +41,7 @@ jobs:
         env:
           PYTHONUTF8: "1"
         run: |
-          python -m PyInstaller --noconfirm --clean --windowed --noupx --name "slot2patch工具" `
+          python -m PyInstaller --noconfirm --clean --console --hide-console hide-early --noupx --name "slot2patch工具" `
             --hidden-import lr_scan --hidden-import slot2patch_core --hidden-import gui_lrscan --hidden-import gui_slot2patch --hidden-import tkinter `
             --add-binary "PatchToolForGbaR3.exe;." --add-data "_gba;_gba" --add-data "使用说明.md;." `
             app_main.py
@@ -69,3 +69,4 @@ jobs:
           name: slot2patch-windows-x64
           path: ${{ runner.temp }}/slot2patch-windows-x64.zip
           if-no-files-found: error
+

@@ -41,8 +41,10 @@ def _run(cmd, on_line, on_done):
     def work():
         code = -1
         try:
-            p = subprocess.Popen(cmd, cwd=str(HERE), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                 text=True, encoding="utf-8", errors="replace", bufsize=1, env=_env())
+            p = subprocess.Popen(cmd, cwd=str(HERE), stdin=subprocess.DEVNULL,
+                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                 text=True, encoding="utf-8", errors="replace", bufsize=1, env=_env(),
+                                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
             for line in p.stdout:
                 on_line(line)
             code = p.wait()
@@ -319,3 +321,4 @@ class ChooseDialog(tk.Toplevel):
     def _pick(self, k):
         self.choice, self.ids = k, sorted(self.checked)
         self.destroy()
+
