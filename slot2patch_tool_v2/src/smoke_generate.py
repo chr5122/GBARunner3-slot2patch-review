@@ -9,6 +9,8 @@ import zipfile
 
 
 def main():
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     # An exe prefix works for the frozen build. A Python/core prefix also
     # permits checking the same fixture on macOS without a Windows runtime.
     prefix = sys.argv[1:]
