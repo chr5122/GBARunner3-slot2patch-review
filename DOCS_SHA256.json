@@ -1,8 +1,8 @@
 {
-  "date": "2026-11-04",
-  "scope": "current homepage and living navigation docs; excludes this manifest",
+  "date": "2026-11-10",
+  "scope": "Navigation document hashes; README.md refreshed 2026-11-10, other entries retained from previous manifest and not revalidated during this update; excludes this manifest",
   "sha256": {
-    "README.md": "80cb860f846956c902124699e326e62aec07f60b2d6df5383a72b8c8ef3a9000",
+    "README.md": "1af050092dfefabd5d1e4e1109004ab072bb0bfa894e2af7a1195d18a2f8ae57",
     "docs/PATCH.md": "d7bc96073b3820f13c828fde335c6b1510601e3502ecef73650ea97ceda5c276",
     "docs/SAVE.md": "ffd1bf87381c80518d66fd3d106fefb6114e439633b806da238f83c59d014692",
     "docs/STATUS.md": "81141c3f3cf50ec1679ffa23e9e0ac24331fc009283148d2a2e1dac76a9a3bf2",
