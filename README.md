@@ -1,6 +1,8 @@
 # GBARunner3 社区改进：PATCH / SAVE
 
-**最新更新：2026-11-04｜新增 A17 PATCH 音频测试版下载；社区代码主线仍为此前 H1＋SR2 整合。**
+**最新更新：新增 A18–A20 PATCH 音频实验归档；社区代码主线仍为此前 H1＋SR2 整合。**
+
+**[A18–A20 音频实验与下载](audio_a18_a20/README.md)**：A20 包含 A18、A19 的后续改进，已完成电脑回放；NDSL 实机听感尚待验证，暂不替代 A17。
 
 **[下载 A17 NDS](audio_a17/GBARunner3_PATCH_A17.nds?raw=true) · [下载 A17 ZIP](audio_a17/GBARunner3_PATCH_A17.zip?raw=true) · [A17 改进、源码与验证范围](audio_a17/README.md)**
 
